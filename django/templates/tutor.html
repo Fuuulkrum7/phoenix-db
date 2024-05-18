@@ -1,0 +1,117 @@
+<!-- core/templates/core/tutor.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Leader Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        @media (max-width: 768px) {
+            .statistics, .actions {
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <h2>Group Selection</h2>
+                <form method="get">
+                    <div class="form-group">
+                        <label for="group">Select Group:</label>
+                        <select class="form-control" id="group" name="group" onchange="this.form.submit()">
+                            {% for group in groups %}
+                                <option value="{{ group.id }}" {% if group.id == selected_group.id %}selected{% endif %}>{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-9">
+                <h2>Group Members</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Full Name</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for person in leaders %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ person.full_name }}</td>
+                                <td>Leader</td>
+                            </tr>
+                        {% endfor %}
+                        {% for person in curators %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ person.full_name }}</td>
+                                <td>Curator</td>
+                            </tr>
+                        {% endfor %}
+                        {% for person in volunteers %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ person.full_name }}</td>
+                                <td>Volunteer</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h2>Children in Group</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Full Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for child in children %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><a href="{% url 'child_detail' child.id %}">{{ child.full_name }}</a></td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h2>Courses</h2>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Course Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course in courses %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ course.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="statistics">
+                    <h2>Statistics</h2>
+                    <!-- Вставьте график здесь -->
+                </div>
+
+                <div class="actions">
+                    <a href="{% url 'mark_attendance' %}" class="btn btn-primary">Mark Attendance</a>
+                    <a href="{% url 'evaluate_lesson' %}" class="btn btn-secondary">Evaluate Lesson</a>
+                    <a href="{% url 'schedule' %}" class="btn btn-info">Schedule</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

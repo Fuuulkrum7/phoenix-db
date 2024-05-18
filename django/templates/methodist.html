@@ -1,0 +1,37 @@
+<!-- core/templates/core/methodist.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Methodist Page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Methodist Page</h1>
+        <a href="{% url 'add_course' %}" class="btn btn-success mb-3">Add Course</a>
+        <a href="{% url 'behavior_rubric' %}" class="btn btn-info mb-3">Behavior Rubric</a>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Course Name</th>
+                    <th>Group</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for course in courses %}
+                    <tr>
+                        <td>{{ course.name }}</td>
+                        <td>{{ course.group.name }}</td>
+                        <td>
+                            <a href="{% url 'edit_course' course.pk %}" class="btn btn-primary btn-sm">Edit</a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'leader_view' %}" class="btn btn-secondary">Go to Leader Page</a>
+    </div>
+</body>
+</html>
