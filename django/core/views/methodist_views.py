@@ -3,8 +3,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 @login_required
-def methodist_dashboard(request):
-    return render(request, 'core/methodist_dashboard.html')
+def methodist(request):
+    return render(request, 'core/methodist.html')
 
 @login_required
 def add_course(request):

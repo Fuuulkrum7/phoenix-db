@@ -3,8 +3,8 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 
 @login_required
-def tutor_dashboard(request):
-    return render(request, 'core/tutor_dashboard.html')
+def tutor(request):
+    return render(request, 'core/tutor.html')
 
 @login_required
 def attendance(request):
@@ -15,5 +15,5 @@ def schedule(request):
     return render(request, 'core/schedule.html')
 
 @login_required
-def child_card(request, child_id):
-    return render(request, 'core/child_card.html', {'child_id': child_id})
+def child(request, child_id):
+    return render(request, 'core/child.html', {'child_id': child_id})
