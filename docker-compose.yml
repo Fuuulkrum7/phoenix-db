@@ -7,7 +7,7 @@ services:
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - django/.env
     depends_on:
       - db
     networks:
@@ -16,6 +16,8 @@ services:
     build: ./db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    env_file:
+      - django/.env
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
