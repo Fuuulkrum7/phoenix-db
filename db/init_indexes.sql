@@ -16,3 +16,5 @@ CREATE INDEX index_lesson_by_semester_and_class ON lesson(semester_id, class_id)
 CREATE INDEX index_reports_by_class_and_semester ON reports(class_id, semester_id);
 
 CREATE INDEX index_marks_value ON marks_for_visit(value);
+
+CREATE INDEX index_semester_start ON semester(start_date);

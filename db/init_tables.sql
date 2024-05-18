@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS course(
 
 -- categories of marks, social etc
 CREATE TABLE IF NOT EXISTS mark_categories(
-    mark_category VARCHAR(16) PRIMARY KEY,
+    mark_category VARCHAR(32) PRIMARY KEY,
     description VARCHAR(96) NOT NULL
 );
 
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS mark_types(
     description VARCHAR(512) NOT NULL,
     min_value SMALLINT NOT NULL CHECK(min_value >= 0),
     max_value SMALLINT NOT NULL CHECK(max_value > min_value),
-    mark_category VARCHAR(16) REFERENCES mark_categories(mark_category)
+    mark_category VARCHAR(32) REFERENCES mark_categories(mark_category)
 );
 
 -- which course has which mark types
