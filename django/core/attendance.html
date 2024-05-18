@@ -3,13 +3,85 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Attendance</title>
+    <title>Mark Attendance</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <style>
+        .note {
+            display: none;
+        }
+    </style>
+    <script>
+    $(document).ready(function() {
+        $('input[type="checkbox"]').each(function() {
+            const checkboxId = $(this).attr('name');
+            const savedState = localStorage.getItem(checkboxId);
+            if (savedState !== null) {
+                $(this).prop('checked', savedState === 'true');
+            }
+            if (!$(this).is(':checked')) {
+                $(this).closest('tr').find('.note').show();
+            }
+        });
+
+        $('input[type="checkbox"]').change(function() {
+            const checkboxId = $(this).attr('name');
+            localStorage.setItem(checkboxId, $(this).is(':checked'));
+            if ($(this).is(':checked')) {
+                $(this).closest('tr').find('.note').hide();
+            } else {
+                $(this).closest('tr').find('.note').show();
+            }
+        });
+
+        $('input[type="text"]').each(function() {
+            const noteId = $(this).attr('name');
+            const savedNote = localStorage.getItem(noteId);
+            if (savedNote !== null) {
+                $(this).val(savedNote);
+            }
+        });
+
+        $('input[type="text"]').on('input', function() {
+            const noteId = $(this).attr('name');
+            localStorage.setItem(noteId, $(this).val());
+        });
+    });
+    </script>
 </head>
 <body>
     <div class="container">
-        <h1>Attendance</h1>
-        
+        <h1>Mark Attendance</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="date">Select Date:</label>
+                <input type="date" id="date" name="date" class="form-control" value="{{ date }}" onchange="this.form.submit()">
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Present</th>
+                        <th>Note</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for child in children %}
+                        <tr>
+                            <td>{{ child.full_name }}</td>
+                            <td>
+                                <input type="checkbox" name="attended_{{ child.id }}" {% if attendance_data.child.id.attended %}checked{% endif %}>
+                            </td>
+                            <td>
+                                <input type="text" name="note_{{ child.id }}" class="form-control note" value="{{ attendance_data.child.id.note }}">
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary">Save Attendance</button>
+        </form>
     </div>
 </body>
 </html>
