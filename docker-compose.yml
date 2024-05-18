@@ -1,32 +1,50 @@
 services:
   web:
-    build: ./django
+    build: 
+      context: ./django
+      dockerfile: ./dockerfile
     command: gunicorn --bind 0.0.0.0:8000 phoenixdb.wsgi:application
     volumes:
-      - .:/app
+      - .:/django/app
     ports:
       - "8000:8000"
     env_file:
-      - django/.env
+      - .env
     depends_on:
       - db
     networks:
-      - mynetwork
+      - postgres
   db:
-    build: ./db
+    image: postgres:13
+    container_name: postgres_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     env_file:
-      - django/.env
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      - .env
     networks:
-      - mynetwork
+      - postgres
+    restart: unless-stopped
+  # pgadmin:
+  #   container_name: pgadmin_container
+  #   image: dpage/pgadmin4
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
+  #   volumes:
+  #      - pgadmin:/var/lib/pgadmin
+  #   ports:
+  #     - "${PGADMIN_PORT:-5050}:80"
+  #   networks:
+  #     - postgres
+  #   restart: unless-stopped
 
 networks:
-  mynetwork:
+  postgres:
+    driver: bridge
 
 volumes:
+  pgadmin:
   postgres_data:
