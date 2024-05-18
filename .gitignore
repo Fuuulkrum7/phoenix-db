@@ -1,2 +1,5 @@
 *.env
 django/.env
+.env
+.vscode
+.code-search
