@@ -3,13 +3,14 @@ services:
     build: 
       context: ./django
       dockerfile: ./dockerfile
-    command: gunicorn --bind 0.0.0.0:8000 phoenixdb.wsgi:application
+    container_name: web
+    command: ["gunicorn", "--bind", "0.0.0.0:8000", "phoenixdb.wsgi:application"]
     volumes:
       - .:/django/app
     ports:
       - "8000:8000"
     env_file:
-      - .env
+      - django/.env
     depends_on:
       - db
     networks:
@@ -22,7 +23,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env
+      - django/.env
     networks:
       - postgres
     restart: unless-stopped
