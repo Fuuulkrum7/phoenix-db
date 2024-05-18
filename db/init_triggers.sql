@@ -114,6 +114,8 @@ CREATE OR REPLACE FUNCTION add_to_history_when_delete()
 RETURNS trigger AS
 $$
 BEGIN
+    DELETE FROM login_data WHERE worker_id = OLD.worker_id AND level_code = OLD.level_code;
+
     INSERT INTO worker_history(level_code, worker_id, tensure_start_date, tensure_end_date) VALUES (
         (SELECT w.level_code, w.worker_id, w.tensure_start_date, CURRENT_DATE 
 		FROM worker_by_role WHERE group_id = OLD.current_group_id)
@@ -123,6 +125,18 @@ BEGIN
 END;
 $$
 LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION update_login_data()
+RETURNS trigger AS
+$$
+BEGIN
+    UPDATE login_data SET level_code = NEW.leave_date 
+        WHERE worker_id = NEW.worker_id AND level_code = OLD.level_code;
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE 'plpgsql'; 
 
 CREATE TRIGGER check_semester_lesson_trigger
     BEFORE INSERT
@@ -165,3 +179,9 @@ CREATE TRIGGER add_worker_hist_on_dismissial
     ON worker
     FOR EACH ROW
     EXECUTE PROCEDURE add_to_history_when_dismissial();
+
+CREATE TRIGGER update_info_in_login
+    BEFORE UPDATE
+    ON worker_by_role
+    FOR EACH ROW
+    EXECUTE PROCEDURE update_login_data();
