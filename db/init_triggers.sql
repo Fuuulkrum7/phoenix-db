@@ -1,19 +1,57 @@
+-- When we need to add lesson
 CREATE OR REPLACE FUNCTION check_semester_in_lesson()
 RETURNS trigger AS
 $$
 BEGIN
+    -- we check if there was no semestr added
     IF (NEW.semester_id IS NULL) THEN
+        -- select new semest_id using borders
         NEW.semester_id = (SELECT semester_id FROM semester 
             WHERE NEW.lesson_date::DATE >= start_date 
                 AND NEW.lesson_date::DATE <= end_date LIMIT 1);
+        -- if (suddenly) we got null, we raise exception
 		IF (NEW.semester_id IS NULL) THEN 
 			RAISE EXCEPTION 'Not correct lesson date';
 		END IF;
     ELSE 
+        -- Here we check, that added lesson and semester has correlation
+        -- If not, raise exception
         IF NOT EXISTS (SELECT 1 FROM semester WHERE semester_id = NEW.semester_id AND
                 NEW.lesson_date::DATE >= start_date AND NEW.lesson_date::DATE <= end_date) THEN
             RAISE EXCEPTION 'Not correct semester id';
         END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE 'plpgsql';
+
+-- Here we have check for semester - is there any overlap with other lessons
+CREATE OR REPLACE FUNCTION check_add_lesson()
+RETURNS trigger AS
+$$
+BEGIN
+    IF EXISTS (SELECT 1 FROM lesson WHERE 
+                  NEW.lesson_date >= lesson_date AND NEW.lesson_date < lesson_date + duration OR 
+                  NEW.lesson_date + duration > lesson_date AND NEW.lesson_date <= lesson_date) THEN
+        RAISE EXCEPTION 'Incorrect lesson start time';
+    END IF;
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE 'plpgsql';
+
+-- Here we have same check with semester - but if there any overlap with semester
+CREATE OR REPLACE FUNCTION check_add_semester()
+RETURNS trigger AS
+$$
+BEGIN
+    IF EXISTS (SELECT 1 FROM semester WHERE 
+                  NEW.start_date >= start_date AND NEW.start_date < end_date OR 
+                  NEW.end_date > start_date AND NEW.end_date =< end_date) THEN
+        RAISE EXCEPTION 'Incorrect semester period';
     END IF;
 
     RETURN NEW;
@@ -84,6 +122,18 @@ CREATE TRIGGER check_semester_lesson_trigger
     ON lesson
     FOR EACH ROW
     EXECUTE PROCEDURE check_semester_in_lesson();
+
+CREATE TRIGGER check_lesson_add
+    BEFORE INSERT
+    ON lesson
+    FOR EACH ROW
+    EXECUTE PROCEDURE check_add_lesson();
+
+CREATE TRIGGER check_semester_add
+    BEFORE INSERT
+    ON semester
+    FOR EACH ROW
+    EXECUTE PROCEDURE check_add_semester();
 
 CREATE TRIGGER check_value_of_mark
     BEFORE INSERT
