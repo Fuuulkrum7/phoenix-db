@@ -1,7 +1,8 @@
-from django.db import models
+from django.db import models, transaction
 from django.db.models.signals import pre_save, post_save, pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
+from django.core.exceptions import ValidationError
 
 ## \class TracksType
 ## \brief Represents the age group for tracks.
@@ -298,75 +299,102 @@ class MarksForVisit(models.Model):
     def __str__(self):
         return f'{self.mark}'
    
-## \brief Signal handler to check and set the semester for a lesson.
-## \param sender The model class that sent the signal.
-## \param instance The actual instance being saved.
+# Trigger function equivalents
+
+## \brief Checks the semester for the lesson.
+## \details If the semester is not set, it sets the correct semester based on the lesson date. Raises an exception if the semester is invalid.
+## \param sender The model class.
+## \param instance The instance being saved.
 ## \param kwargs Additional keyword arguments.
 @receiver(pre_save, sender=Lesson)
 def check_semester_in_lesson(sender, instance, **kwargs):
-    ## Check if the semester_id is None and set it based on the lesson_date.
-    if instance.semester_id is None:
-        try:
-            semester = Semester.objects.get(start_date__lte=instance.lesson_date, end_date__gte=instance.lesson_date)
-            instance.semester_id = semester.id
-        except Semester.DoesNotExist:
-            raise ValueError('Not correct lesson date')
+    if instance.semester is None:
+        semester = Semester.objects.filter(start_date__lte=instance.lesson_date.date(),
+                                            end_date__gte=instance.lesson_date.date()).first()
+        if semester:
+            instance.semester = semester
+        else:
+            raise ValidationError('Not correct lesson date')
     else:
-        ## Validate the provided semester_id based on the lesson_date.
-        if not Semester.objects.filter(id=instance.semester_id, start_date__lte=instance.lesson_date, end_date__gte=instance.lesson_date).exists():
-            raise ValueError('Not correct semester id')
+        if not Semester.objects.filter(pk=instance.semester_id, start_date__lte=instance.lesson_date.date(),
+                                       end_date__gte=instance.lesson_date.date()).exists():
+            raise ValidationError('Not correct semester id')
 
-## \brief Signal handler to check the mark value before saving.
-## \param sender The model class that sent the signal.
-## \param instance The actual instance being saved.
+## \brief Checks for overlapping lessons before adding a new lesson.
+## \details Ensures that no existing lessons overlap with the new lesson's start time.
+## \param sender The model class.
+## \param instance The instance being saved.
+## \param kwargs Additional keyword arguments.
+@receiver(pre_save, sender=Lesson)
+def check_add_lesson(sender, instance, **kwargs):
+    if Lesson.objects.filter(
+            lesson_date__lte=instance.lesson_date,
+            lesson_date__gte=instance.lesson_date,
+            group_class=instance.group_class
+    ).exists():
+        raise ValidationError('Incorrect lesson start time')
+
+## \brief Checks for overlapping semesters before adding a new semester.
+## \details Ensures that the new semester's period does not overlap with existing semesters.
+## \param sender The model class.
+## \param instance The instance being saved.
+## \param kwargs Additional keyword arguments.
+@receiver(pre_save, sender=Semester)
+def check_add_semester(sender, instance, **kwargs):
+    if Semester.objects.filter(
+            start_date__lte=instance.start_date,
+            end_date__gte=instance.start_date
+    ).exists():
+        raise ValidationError('Incorrect semester period')
+
+## \brief Validates the mark value before saving.
+## \details Ensures that the mark value does not exceed the maximum allowed value.
+## \param sender The model class.
+## \param instance The instance being saved.
 ## \param kwargs Additional keyword arguments.
 @receiver(pre_save, sender=MarksForVisit)
 def check_mark_value(sender, instance, **kwargs):
-    ## Check if the mark exceeds the maximum allowed value.
     if instance.mark > instance.mark_type.max_value:
-        raise ValueError('Too big mark has been added')
+        raise ValidationError('Too big mark has been added')
 
-## \brief Signal handler to add a class to the child's history before updating.
-## \param sender The model class that sent the signal.
-## \param instance The actual instance being saved.
+## \brief Adds class history when a child changes groups.
+## \details Records the class history if the child's current group changes.
+## \param sender The model class.
+## \param instance The instance being saved.
 ## \param kwargs Additional keyword arguments.
 @receiver(pre_save, sender=Child)
 def add_class_to_history(sender, instance, **kwargs):
-    ## Check if the child's group has changed and update the history.
-    if instance.pk is not None:
-        old_instance = Child.objects.get(pk=instance.pk)
-        if old_instance.current_group_id != instance.current_group_id:
-            class_history = ClassHistory(
-                child_id=old_instance.id,
-                class_id=old_instance.current_group_id,
-                add_date=old_instance.add_to_group_date,
-                leave_date=timezone.now().date()
+    if instance.pk:
+        original = Child.objects.get(pk=instance.pk)
+        if original.current_group_id != instance.current_group_id:
+            GroupClass.objects.create(
+                child=instance,
+                class_id=original.current_group_id,
+                add_date=original.add_to_group_date,
+                leave_date=models.functions.Now()
             )
-            class_history.save()
-            instance.add_to_group_date = timezone.now().date()
+            instance.add_to_group_date = models.functions.Now()
 
-## \brief Signal handler to update worker history upon dismissal.
-## \param sender The model class that sent the signal.
-## \param instance The actual instance being saved.
+## \brief Handles worker dismissal updates.
+## \details Deletes the worker's role if the dismissal date is set.
+## \param sender The model class.
+## \param instance The instance being saved.
 ## \param kwargs Additional keyword arguments.
 @receiver(pre_save, sender=Worker)
 def add_to_history_when_dismissial(sender, instance, **kwargs):
-    ## Check if the dismissal_date is being set and update history.
-    if instance.pk is not None:
-        old_instance = Worker.objects.get(pk=instance.pk)
-        if old_instance.dismissal_date is None and instance.dismissal_date is not None:
-            WorkerByRole.objects.filter(worker_id=instance.pk).delete()
+    if instance.dismissal_date:
+        WorkerByRole.objects.filter(worker=instance).delete()
 
-## \brief Signal handler to update worker history upon deletion.
-## \param sender The model class that sent the signal.
-## \param instance The actual instance being deleted.
+## \brief Adds worker history when a role is deleted.
+## \details Records the worker's role history when the role is deleted.
+## \param sender The model class.
+## \param instance The instance being deleted.
 ## \param kwargs Additional keyword arguments.
 @receiver(pre_delete, sender=WorkerByRole)
 def add_to_history_when_delete(sender, instance, **kwargs):
-    ## Insert a record into the worker history table before deleting a worker's role.
     WorkerHistory.objects.create(
         role_name=instance.role_name,
-        worker_id=instance.worker_id,
+        worker=instance.worker,
         tensure_start_date=instance.tensure_start_date,
-        tensure_end_date=timezone.now().date()
+        tensure_end_date=models.functions.Now()
     )
