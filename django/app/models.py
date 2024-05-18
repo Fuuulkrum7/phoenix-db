@@ -32,6 +32,11 @@ class Child(models.Model):
     def __str__(self):
         return f'{self.name} {self.surname}'
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['current_group'], name='index_child_group'),
+        ]
+
 ## \class Parent
 ## \brief Represents a parent of a child.
 class Parent(models.Model):
@@ -43,6 +48,11 @@ class Parent(models.Model):
     def __str__(self):
         return f'{self.name} {self.surname}'
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['child'], name='index_parent_f'),
+        ]
+
 ## \class ParentPhones
 ## \brief Represents the phone numbers of parents.
 class ParentPhones(models.Model):
@@ -51,6 +61,11 @@ class ParentPhones(models.Model):
 
     def __str__(self):
         return f'{self.phone_number}'
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['parent', 'phone_number'], name='index_parent_phones_u'),
+        ]
 
 ## \class Worker
 ## \brief Represents a worker.
@@ -155,6 +170,9 @@ class GroupClass(models.Model):
 
     class Meta:
         unique_together = ('teacher', 'group', 'course')
+        indexes = [
+            models.Index(fields=['teacher', 'group', 'course'], name='index_class_u'),
+        ]
 
 ## \class ClassHistory
 ## \brief Represents previous classes where the child was.
@@ -166,6 +184,9 @@ class ClassHistory(models.Model):
 
     class Meta:
         unique_together = ('child', 'group_class')
+        indexes = [
+            models.Index(fields=['child', 'group_class'], name='index_class_history'),
+        ]
 
 ## \class CourseComments
 ## \brief Represents comments about the course.
@@ -203,6 +224,11 @@ class Semester(models.Model):
     start_date = models.DateField() ## \brief Start date of the semester.
     end_date = models.DateField() ## \brief End date of the semester.
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['start_date'], name='index_semester_start'),
+        ]
+
 ## \class Lesson
 ## \brief Represents a lesson for a class.
 class Lesson(models.Model):
@@ -213,6 +239,10 @@ class Lesson(models.Model):
 
     class Meta:
         unique_together = ('group_class', 'lesson_date')
+        indexes = [
+            models.Index(fields=['lesson_date'], name='index_lessons_date'),
+            models.Index(fields=['semester', 'group_class'], name='index_lesson_by_semester_and_class'),
+        ]
 
 ## \class Reports
 ## \brief Represents reports written by a worker about a class.
@@ -225,6 +255,9 @@ class Reports(models.Model):
 
     class Meta:
         unique_together = ('child', 'group_class', 'semester', 'filename')
+        indexes = [
+            models.Index(fields=['group_class', 'semester'], name='index_reports_by_class_and_semester'),
+        ]
 
 ## \class VisitTypes
 ## \brief Represents types of class visits, such as "visited" or "not visited".
@@ -242,6 +275,10 @@ class Visits(models.Model):
 
     class Meta:
         unique_together = ('child', 'group_class', 'lesson_date')
+        indexes = [
+            models.Index(fields=['child', 'group_class', 'lesson_date'], name='index_visits_u'),
+            models.Index(fields=['group_class', 'lesson_date'], name='index_visits_by_lesson'),
+        ]
 
 ## \class MarksForVisit
 ## \brief Represents marks given for a visit.
@@ -249,6 +286,11 @@ class MarksForVisit(models.Model):
     visit = models.ForeignKey(Visits, on_delete=models.CASCADE) ## \brief Foreign key to Visits.
     mark_type = models.ForeignKey(MarkTypes, on_delete=models.CASCADE) ## \brief Foreign key to MarkTypes.
     mark = models.DecimalField(max_digits=3, decimal_places=1) ## \brief The mark given.
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['mark'], name='index_marks_value'),
+        ]
 
     def __str__(self):
         return f'{self.mark}'
