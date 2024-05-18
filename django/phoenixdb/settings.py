@@ -1,17 +1,13 @@
 import os
 from pathlib import Path
 
-# Получение пути к директории проекта
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Основные настройки
 SECRET_KEY = os.environ.get('SECRET_KEY', 'your-default-secret-key')
 DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
-# Настройки для разрешенных хостов
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
-# Приложения Django
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -19,11 +15,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # Ваши приложения
     'app',
 ]
 
-# Настройки Middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -34,10 +28,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# URL конфигурация
 ROOT_URLCONF = 'phoenixdb.urls'
 
-# Настройки шаблонов
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -54,7 +46,6 @@ TEMPLATES = [
     },
 ]
 
-# Настройки базы данных
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -66,8 +57,6 @@ DATABASES = {
     }
 }
 
-
-# Настройки паролей
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -83,20 +72,16 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# Локализация и время
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Настройки статических файлов
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
-# Настройки медиа файлов
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Дополнительные настройки
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
