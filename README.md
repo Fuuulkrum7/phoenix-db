@@ -14,12 +14,14 @@ git clone https://github.com/
 docker-compose up --build -d
 
 If you get an error about the database not existing, run
+
 '''
 docker-compose exec db psql -U admin -d huonix
 
 create database huonix;
 
 \q
+
 '''
 
 docker-compose exec web python manage.py migrate
@@ -30,6 +32,9 @@ docker-compose exec web python manage.py createsuperuser
 RUN python manage.py collectstatic --noinput
 '''
 
+'''
+docker-compose exec web python manage.py makemigrations
+'''
 ## Doxygen
 Install doxygen
 
