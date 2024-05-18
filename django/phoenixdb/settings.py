@@ -63,7 +63,7 @@ ROOT_URLCONF = 'phoenixdb.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -147,3 +147,4 @@ MEDIA_ROOT = BASE_DIR / 'media'
 ## @var DEFAULT_AUTO_FIELD
 #  The default type of primary key to use for new models if the model doesn’t explicitly specify.
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+

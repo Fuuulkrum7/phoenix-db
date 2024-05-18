@@ -1,0 +1,82 @@
+<!-- core/templates/core/child.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Child Details</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Child Details</h1>
+        <div class="card mb-3">
+            <div class="card-header">
+                <h2>{{ child.full_name }}</h2>
+            </div>
+            <div class="card-body">
+                <p><strong>Gender:</strong> {{ child.get_gender_display }}</p>
+                <p><strong>Date of Birth:</strong> {{ child.date_of_birth }}</p>
+                <p><strong>Group:</strong> {{ child.group.name if child.group else 'N/A' }}</p>
+                <h4>Courses</h4>
+                <ul>
+                    {% for course in child.courses.all %}
+                        <li>{{ course.name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3>Group History</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Group</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for history in group_history %}
+                            <tr>
+                                <td>{{ history.group.name }}</td>
+                                <td>{{ history.start_date }}</td>
+                                <td>{{ history.end_date if history.end_date else 'Present' }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3>Upcoming Lessons</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Lesson</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lesson in upcoming_lessons %}
+                            <tr>
+                                <td>{{ lesson.date }}</td>
+                                <td>{{ lesson.start_time }} - {{ lesson.end_time }}</td>
+                                <td>{{ lesson.name }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
