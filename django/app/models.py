@@ -241,7 +241,7 @@ class Lesson(models.Model):
         unique_together = ('group_class', 'lesson_date')
         indexes = [
             models.Index(fields=['lesson_date'], name='index_lessons_date'),
-            models.Index(fields=['semester', 'group_class'], name='index_lesson_by_semester_and_class'),
+            models.Index(fields=['semester', 'group_class'], name='index_les_by_sem_and_class'),
         ]
 
 ## \class Reports
@@ -256,7 +256,7 @@ class Reports(models.Model):
     class Meta:
         unique_together = ('child', 'group_class', 'semester', 'filename')
         indexes = [
-            models.Index(fields=['group_class', 'semester'], name='index_reports_by_class_and_semester'),
+            models.Index(fields=['group_class', 'semester'], name='index_reports_by_class&sem'),
         ]
 
 ## \class VisitTypes
