@@ -40,7 +40,7 @@ $$
 BEGIN
     INSERT INTO class_history(child_id, class_id, add_date, leave_date) VALUES (
         (SELECT NEW.child_id AS cid, c.class_id, OLD.add_to_group_date AS add_d, CURRENT_DATE 
-		FROM group_class WHERE group_id = OLD.current_group_id)
+		FROM group_class c WHERE group_id = OLD.current_group_id)
 	);
     
     NEW.add_to_group_date = CURRENT_DATE;
@@ -50,21 +50,34 @@ END;
 $$
 LANGUAGE 'plpgsql';
 
--- CREATE OR REPLACE FUNCTION add_worker_to_history()
--- RETURNS trigger AS
--- $$
--- BEGIN
---     INSERT INTO worker_history(role_name, worker_id, tensure_start_date, tensure_end_date) VALUES (
---         (SELECT NEW.worker_id AS cid, c.class_id, OLD.add_to_group_date AS add_d, CURRENT_DATE 
--- 		FROM group_class WHERE group_id = OLD.current_group_id)
--- 	);
-    
---     NEW.add_to_group_date = CURRENT_DATE;
+CREATE OR REPLACE FUNCTION add_to_history_when_dismissial()
+RETURNS trigger AS
+$$
+BEGIN
+    IF (NEW.dismissal_date IS NULL) THEN
+        RETURN NEW;
+    END IF;
 
---     RETURN NEW;
--- END;
--- $$
--- LANGUAGE 'plpgsql';
+    DELETE FROM worker_by_role WHERE worker_id = OLD.worker_id;
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE 'plpgsql';
+
+CREATE OR REPLACE FUNCTION add_to_history_when_delete()
+RETURNS trigger AS
+$$
+BEGIN
+    INSERT INTO worker_history(role_name, worker_id, tensure_start_date, tensure_end_date) VALUES (
+        (SELECT w.role_name, w.worker_id, w.tensure_start_date, CURRENT_DATE 
+		FROM worker_by_role WHERE group_id = OLD.current_group_id)
+	);
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE 'plpgsql';
 
 CREATE TRIGGER check_semester_lesson_trigger
     BEFORE INSERT
@@ -83,3 +96,15 @@ CREATE TRIGGER add_classes_to_history
     ON child
     FOR EACH ROW
     EXECUTE PROCEDURE add_class_to_history();
+
+CREATE TRIGGER add_worker_hist_on_delete
+    BEFORE DELETE
+    ON worker_by_role
+    FOR EACH ROW
+    EXECUTE PROCEDURE add_to_history_when_delete();
+
+CREATE TRIGGER add_worker_hist_on_dismissial
+    BEFORE UPDATE
+    ON worker
+    FOR EACH ROW
+    EXECUTE PROCEDURE add_to_history_when_dismissial();
