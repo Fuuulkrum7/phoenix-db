@@ -12,8 +12,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 # Копируем файл требований и устанавливаем зависимости Python
-COPY requirements.txt /app/
-COPY .env /app/
+COPY ../requirements.txt /app/
+COPY ../.env /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем остальные файлы проекта
