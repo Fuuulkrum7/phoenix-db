@@ -19,6 +19,6 @@ INSERT INTO mark_types(description, min_value, max_value, mark_category) VALUES
 
 INSERT INTO roles(role_name, eng_role_name, level_code) VALUES 
     ('Куратор', 'Curator', 'C'),
-    ('Ведущий', 'Tutor', 'T')
+    ('Ведущий', 'Tutor', 'T'),
     ('Методист', 'Methodist', 'M'),
     ('Администратор', 'Admin', 'A');

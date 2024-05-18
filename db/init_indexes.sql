@@ -10,8 +10,10 @@ CREATE INDEX index_parent_f ON parent(child_id);
 CREATE INDEX index_visits_u ON visits(child_id, class_id, lesson_date);
 CREATE INDEX index_visits_by_lesson ON visits(class_id, lesson_date);
 
-CREATE INDEX index_lessons_date ON lesson(lesson_date);
-CREATE INDEX index_lesson_by_semester_and_class ON lesson(semester_id, class_id);
+-- That's a good point - we change lessons some times per day,
+-- but we also search them more times per day
+-- CREATE INDEX index_lessons_date ON lesson(lesson_date);
+-- CREATE INDEX index_lesson_by_semester_and_class ON lesson(semester_id, class_id);
 
 CREATE INDEX index_reports_by_class_and_semester ON reports(class_id, semester_id);
 

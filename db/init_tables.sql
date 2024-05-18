@@ -1,7 +1,7 @@
 -- all existing tracks (age group)
 CREATE TABLE IF NOT EXISTS tracks_type(
     track_type_id SMALLSERIAL PRIMARY KEY,
-    start_age SMALLINT NOT NULL,
+    start_age SMALLINT NOT NULL CHECK(start_age > 0),
     end_age SMALLINT NOT NULL CHECK(end_age >= start_age),
     max_lessons_number NUMERIC(1) NOT NULL CHECK(max_lessons_number > 0)
 );
@@ -51,30 +51,32 @@ CREATE TABLE IF NOT EXISTS worker(
 
 -- roles of users in system
 CREATE TABLE IF NOT EXISTS roles(
-    role_name VARCHAR(32) PRIMARY KEY,
-    eng_role_name VARCHAR(32) NOT NULL,
-    level_code CHAR(1) NOT NULL UNIQUE
+    level_code CHAR(1) PRIMARY KEY,
+    role_name VARCHAR(32) NOT NULL UNIQUE,
+    eng_role_name VARCHAR(32) NOT NULL
+);
+
+-- pairs of workers and their roles
+CREATE TABLE IF NOT EXISTS worker_by_role(
+    level_code CHAR(1) NOT NULL REFERENCES roles(level_code),
+    worker_id INT NOT NULL REFERENCES worker(worker_id),
+    tensure_start_date DATE NOT NULL DEFAULT CURRENT_DATE CHECK(tensure_start_date <= CURRENT_DATE),
+
+    CONSTRAINT primary_worker_role PRIMARY KEY (level_code, worker_id)
 );
 
 CREATE TABLE IF NOT EXISTS login_data(
     worker_login VARCHAR(64) PRIMARY KEY,
     password CHAR(256) NOT NULL,
-    worker_id INT NOT NULL REFERENCES worker(worker_id),
-    
-);
+    worker_id INT NOT NULL,
+    level_code CHAR(1) NOT NULL,
 
--- pairs of workers and their roles
-CREATE TABLE IF NOT EXISTS worker_by_role(
-    role_name VARCHAR(32) NOT NULL REFERENCES roles(role_name),
-    worker_id INT NOT NULL REFERENCES worker(worker_id),
-    tensure_start_date DATE NOT NULL DEFAULT CURRENT_DATE CHECK(tensure_start_date <= CURRENT_DATE),
-
-    CONSTRAINT primary_worker_role PRIMARY KEY (role_name, worker_id)
+    CONSTRAINT worker_to_login FOREIGN KEY(worker_id, level_code) REFERENCES worker_by_role(worker_id, level_code)
 );
 
 -- previous pairs of worker and his role
 CREATE TABLE IF NOT EXISTS worker_history(
-    role_name VARCHAR(32) NOT NULL REFERENCES roles(role_name),
+    level_code CHAR(1) NOT NULL REFERENCES roles(level_code),
     worker_id INT NOT NULL REFERENCES worker(worker_id),
     tensure_start_date DATE NOT NULL CHECK(tensure_start_date <= CURRENT_DATE),
     tensure_end_date DATE NOT NULL CHECK(tensure_end_date >= tensure_start_date)
@@ -129,7 +131,7 @@ CREATE TABLE IF NOT EXISTS group_class(
 );
 
 -- previous classes, where child was. 
-CREATE TABLE IF NOT  EXISTS class_history(
+CREATE TABLE IF NOT EXISTS class_history(
     child_id INT NOT NULL REFERENCES child(child_id),
     class_id INT NOT NULL REFERENCES group_class(class_id),
     add_date DATE NOT NULL CHECK(add_date <= CURRENT_DATE),
