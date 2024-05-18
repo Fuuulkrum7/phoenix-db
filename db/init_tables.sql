@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS class(
     course_id INT NOT NULL REFERENCES course(course_id),
     creation_date DATE NOT NULL,
 
-    CONSTRAINT unique_class UNIQUE(group_id, teacher_id, course_id)
+    CONSTRAINT unique_class UNIQUE(teacher_id, group_id, course_id)
 );
 
 -- previous classes, where child was. 
@@ -156,19 +156,20 @@ CREATE TABLE IF NOT EXISTS class_info(
     CONSTRAINT primary_class_info PRIMARY KEY (class_id, author_id)
 );
 
--- lesson for class
-CREATE TABLE IF NOT EXISTS lesson(
-    class_id INT NOT NULL REFERENCES class(class_id),
-    lesson_date TIME NOT NULL,
-    duration SMALLINT NOT NULL,
-
-    CONSTRAINT primary_lesson PRIMARY KEY (class_id, lesson_date)
-);
-
 CREATE TABLE IF NOT EXISTS semester(
     semester_id SERIAL PRIMARY KEY,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL CHECK(end_date > start_date)
+);
+
+-- lesson for class
+CREATE TABLE IF NOT EXISTS lesson(
+    class_id INT NOT NULL REFERENCES class(class_id),
+    lesson_date TIMESTAMP NOT NULL,
+    duration SMALLINT NOT NULL,
+    semester_id INT REFERENCES semester(semester_id),
+
+    CONSTRAINT primary_lesson PRIMARY KEY (class_id, lesson_date)
 );
 
 -- written by worker report about class (worker is part of this class)
@@ -193,7 +194,7 @@ CREATE TABLE IF NOT EXISTS visits(
     visit_id BIGSERIAL PRIMARY KEY,
     child_id INT NOT NULL REFERENCES child(child_id),
     class_id INT NOT NULL,
-    lesson_date TIME NOT NULL,
+    lesson_date TIMESTAMP NOT NULL,
     visit_type char(1) NOT NULL REFERENCES visit_types(visit_type_id),
 	
 	CONSTRAINT fk_lessons_from_visits FOREIGN KEY (class_id, lesson_date) REFERENCES lesson(class_id, lesson_date),
