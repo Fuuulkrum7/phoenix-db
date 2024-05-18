@@ -19,7 +19,9 @@ CREATE TABLE IF NOT EXISTS child(
     surname VARCHAR(64) NOT NULL,
     patronymic VARCHAR(64),
     birthday DATE NOT NULL CHECK(birthday < CURRENT_DATE),
-    current_group_id INT REFERENCES group_table(group_id)
+    current_group_id INT REFERENCES group_table(group_id),
+    add_to_group_date DATE DEFAULT CURRENT_DATE,
+    gender CHAR(1) NOT NULL
 );
 
 -- parent of child
@@ -51,7 +53,14 @@ CREATE TABLE IF NOT EXISTS worker(
 CREATE TABLE IF NOT EXISTS roles(
     role_name VARCHAR(32) PRIMARY KEY,
     eng_role_name VARCHAR(32) NOT NULL,
-    level_code CHAR(1) NOT NULL
+    level_code CHAR(1) NOT NULL UNIQUE
+);
+
+CREATE TABLE IF NOT EXISTS login_data(
+    worker_login VARCHAR(64) PRIMARY KEY,
+    password CHAR(256) NOT NULL,
+    worker_id INT NOT NULL REFERENCES worker(worker_id),
+    
 );
 
 -- pairs of workers and their roles
@@ -109,7 +118,7 @@ CREATE TABLE IF NOT EXISTS course_authors(
 );
 
 -- comnbination of group, teacher (worker with specific type) and course
-CREATE TABLE IF NOT EXISTS class(
+CREATE TABLE IF NOT EXISTS group_class(
     class_id BIGSERIAL PRIMARY KEY,
     group_id INT NOT NULL REFERENCES group_table(group_id),
     teacher_id INT NOT NULL REFERENCES worker(worker_id),
@@ -122,7 +131,7 @@ CREATE TABLE IF NOT EXISTS class(
 -- previous classes, where child was. 
 CREATE TABLE IF NOT  EXISTS class_history(
     child_id INT NOT NULL REFERENCES child(child_id),
-    class_id INT NOT NULL REFERENCES class(class_id),
+    class_id INT NOT NULL REFERENCES group_class(class_id),
     add_date DATE NOT NULL CHECK(add_date <= CURRENT_DATE),
     leave_date DATE NOT NULL CHECK(leave_date >= add_date),
 
@@ -149,7 +158,7 @@ CREATE TABLE IF NOT EXISTS child_info(
 
 -- info about class, written by worker
 CREATE TABLE IF NOT EXISTS class_info(
-    class_id INT NOT NULL REFERENCES class(class_id),
+    class_id INT NOT NULL REFERENCES group_class(class_id),
     author_id INT NOT NULL REFERENCES worker(worker_id),
     description VARCHAR(512) NOT NULL,
 
@@ -164,7 +173,7 @@ CREATE TABLE IF NOT EXISTS semester(
 
 -- lesson for class
 CREATE TABLE IF NOT EXISTS lesson(
-    class_id INT NOT NULL REFERENCES class(class_id),
+    class_id INT NOT NULL REFERENCES group_class(class_id),
     lesson_date TIMESTAMP NOT NULL,
     duration SMALLINT NOT NULL,
     semester_id INT REFERENCES semester(semester_id),
@@ -175,7 +184,7 @@ CREATE TABLE IF NOT EXISTS lesson(
 -- written by worker report about class (worker is part of this class)
 CREATE TABLE IF NOT EXISTS reports(
     child_id INT NOT NULL REFERENCES child(child_id),
-    class_id INT NOT NULL REFERENCES class(class_id),
+    class_id INT NOT NULL REFERENCES group_class(class_id),
     semester_id INT NOT NULL REFERENCES semester(semester_id),
     filename VARCHAR(128) NOT NULL, 
     add_time TIME NOT NULL DEFAULT NOW(),
@@ -205,5 +214,5 @@ CREATE TABLE IF NOT EXISTS visits(
 CREATE TABLE IF NOT EXISTS marks_for_visit(
     visit_id BIGINT NOT NULL REFERENCES visits(visit_id),
     mark_type INT NOT NULL REFERENCES mark_types(mark_type_id),
-    value SMALLINT NOT NULL
+    mark NUMERIC(3, 1) NOT NULL
 );
