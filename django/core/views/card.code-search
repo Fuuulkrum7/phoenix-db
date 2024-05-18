@@ -1,0 +1,28 @@
+# Query: card
+# ContextLines: 1
+
+Результаты: 6 - Файлы 4
+
+django/core/child.html:
+   5      <meta charset="UTF-8">
+   6:     <title>Child Card</title>
+   7      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+  10      <div class="container">
+  11:         <h1>Child Card for ID {{ child_id }}</h1>
+  12          
+
+django/core/urls/child.py:
+  5  urlpatterns = [
+  6:     path('<int:child_id>/', child_views.child, name='child_card'),
+  7  ]
+
+django/core/urls/tutor.py:
+  8      path('schedule/', tutor_views.schedule, name='schedule'),
+  9:     path('child/<int:child_id>/', tutor_views.child, name='child_card'),
+  10  ]
+
+django/core/views/child_views.py:
+  5  @login_required
+  6: def child(request, child_id):
+  7      # Здесь вы можете добавить логику для получения данных о ребенке
