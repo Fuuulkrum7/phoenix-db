@@ -1,269 +1,282 @@
 from django.db import models
+from django.db.models.signals import pre_save, pre_delete
+from django.dispatch import receiver
+from django.core.exceptions import ValidationError
+from django.utils.timezone import now
 
-## \class TracksType
-## \brief Represents the age group for tracks.
-class TracksType(models.Model):
-    start_age = models.SmallIntegerField()  ## \brief Starting age of the track.
-    end_age = models.SmallIntegerField()    ## \brief Ending age of the track.
-    max_lessons_number = models.DecimalField(max_digits=2, decimal_places=0)  ## \brief Maximum number of lessons for the track.
-
-    def __str__(self):
-        return f'Track {self.start_age}-{self.end_age}'
-
-## \class GroupTable
-## \brief Represents a group of children.
-class GroupTable(models.Model):
-    track_type = models.ForeignKey(TracksType, on_delete=models.CASCADE)  ## \brief Foreign key to TracksType.
-
-    def __str__(self):
-        return f'Group {self.id}'
-
-## \class Child
-## \brief Represents a child being educated.
-class Child(models.Model):
-    name = models.CharField(max_length=64)    ## \brief Child's first name.
-    surname = models.CharField(max_length=64) ## \brief Child's surname.
-    patronymic = models.CharField(max_length=64, blank=True, null=True) ## \brief Child's patronymic.
-    birthday = models.DateField() ## \brief Child's birth date.
-    current_group = models.ForeignKey(GroupTable, on_delete=models.SET_NULL, null=True, blank=True) ## \brief Current group the child belongs to.
-    add_to_group_date = models.DateField(auto_now_add=True) ## \brief Date the child was added to the group.
-    gender = models.CharField(max_length=1) ## \brief Child's gender.
-
-    def __str__(self):
-        return f'{self.name} {self.surname}'
+## \class TrackType
+## \brief Represents the types of tracks for different age groups.
+class TrackType(models.Model):
+    track_type_id = models.AutoField(primary_key=True)
+    start_age = models.SmallIntegerField(null=False)
+    end_age = models.SmallIntegerField(null=False)
+    max_lessons_number = models.DecimalField(max_digits=1, decimal_places=0, null=False)
 
     class Meta:
-        indexes = [
-            models.Index(fields=['current_group'], name='index_child_group'),
+        constraints = [
+            models.CheckConstraint(check=models.Q(start_age__gt=0), name='check_start_age_gt_0'),
+            models.CheckConstraint(check=models.Q(end_age__gte=models.F('start_age')), name='check_end_age_gte_start_age'),
+            models.CheckConstraint(check=models.Q(max_lessons_number__gt=0), name='check_max_lessons_number_gt_0')
+        ]
+
+## \class Group
+## \brief Represents a group of children.
+class Group(models.Model):
+    group_id = models.AutoField(primary_key=True)
+    track_type = models.ForeignKey(TrackType, on_delete=models.CASCADE)
+
+## \class Child
+## \brief Represents a child enrolled in the system.
+class Child(models.Model):
+    child_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=64, null=False)
+    surname = models.CharField(max_length=64, null=False)
+    patronymic = models.CharField(max_length=64, blank=True, null=True)
+    birthday = models.DateField(null=False)
+    current_group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    add_to_group_date = models.DateField(auto_now_add=True)
+    gender = models.CharField(max_length=1, null=False)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=models.Q(birthday__lt=models.functions.Now()), name='check_birthday_lt_current_date')
         ]
 
 ## \class Parent
 ## \brief Represents a parent of a child.
 class Parent(models.Model):
-    child = models.ForeignKey(Child, on_delete=models.CASCADE)  ## \brief Foreign key to Child.
-    name = models.CharField(max_length=64)  ## \brief Parent's first name.
-    surname = models.CharField(max_length=64) ## \brief Parent's surname.
-    patronymic = models.CharField(max_length=64, blank=True, null=True) ## \brief Parent's patronymic.
+    parent_id = models.AutoField(primary_key=True)
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    name = models.CharField(max_length=64, null=False)
+    surname = models.CharField(max_length=64, null=False)
+    patronymic = models.CharField(max_length=64, blank=True, null=True)
 
-    def __str__(self):
-        return f'{self.name} {self.surname}'
-
-    class Meta:
-        indexes = [
-            models.Index(fields=['child'], name='index_parent_f'),
-        ]
-
-## \class ParentPhones
-## \brief Represents the phone numbers of parents.
-class ParentPhones(models.Model):
-    parent = models.ForeignKey(Parent, on_delete=models.CASCADE)  ## \brief Foreign key to Parent.
-    phone_number = models.CharField(max_length=14, unique=True)  ## \brief Parent's phone number.
-
-    def __str__(self):
-        return f'{self.phone_number}'
+## \class ParentPhone
+## \brief Represents the phone number of a parent.
+class ParentPhone(models.Model):
+    parent = models.ForeignKey(Parent, on_delete=models.CASCADE)
+    phone_number = models.CharField(max_length=14, null=False)
 
     class Meta:
-        indexes = [
-            models.Index(fields=['parent', 'phone_number'], name='index_parent_phones_u'),
+        constraints = [
+            models.UniqueConstraint(fields=['parent', 'phone_number'], name='unique_parent_phone')
         ]
 
 ## \class Worker
-## \brief Represents a worker.
+## \brief Represents a worker in the system.
 class Worker(models.Model):
-    name = models.CharField(max_length=64)  ## \brief Worker's first name.
-    surname = models.CharField(max_length=64) ## \brief Worker's surname.
-    patronymic = models.CharField(max_length=64, blank=True, null=True) ## \brief Worker's patronymic.
-    hire_date = models.DateField() ## \brief Date the worker was hired.
-    dismissal_date = models.DateField(blank=True, null=True) ## \brief Date the worker was dismissed.
-
-    def __str__(self):
-        return f'{self.name} {self.surname}'
-
-## \class Roles
-## \brief Represents the roles of users in the system.
-class Roles(models.Model):
-    role_name = models.CharField(max_length=32, primary_key=True) ## \brief Name of the role.
-    eng_role_name = models.CharField(max_length=32) ## \brief English name of the role.
-    level_code = models.CharField(max_length=1, unique=True) ## \brief Level code of the role.
-
-    def __str__(self):
-        return f'{self.role_name}'
-
-## \class LoginData
-## \brief Represents the login data for workers.
-class LoginData(models.Model):
-    worker_login = models.CharField(max_length=64, primary_key=True) ## \brief Worker's login.
-    password = models.CharField(max_length=256) ## \brief Worker's password.
-    worker = models.ForeignKey(Worker, on_delete=models.CASCADE) ## \brief Foreign key to Worker.
-
-    def __str__(self):
-        return f'{self.worker_login}'
-
-## \class WorkerByRole
-## \brief Represents pairs of workers and their roles.
-class WorkerByRole(models.Model):
-    role_name = models.ForeignKey(Roles, on_delete=models.CASCADE) ## \brief Foreign key to Roles.
-    worker = models.ForeignKey(Worker, on_delete=models.CASCADE) ## \brief Foreign key to Worker.
-    tensure_start_date = models.DateField(auto_now_add=True) ## \brief Start date of the tenure.
+    worker_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=64, null=False)
+    surname = models.CharField(max_length=64, null=False)
+    patronymic = models.CharField(max_length=64, blank=True, null=True)
+    hire_date = models.DateField(null=False)
+    dismissal_date = models.DateField(blank=True, null=True)
 
     class Meta:
-        unique_together = ('role_name', 'worker')
+        constraints = [
+            models.CheckConstraint(check=models.Q(hire_date__lte=models.functions.Now()), name='check_hire_date_le_current_date'),
+            models.CheckConstraint(check=models.Q(dismissal_date__gt=models.F('hire_date')), name='check_dismissal_date_gt_hire_date')
+        ]
+
+## \class Role
+## \brief Represents a role in the system.
+class Role(models.Model):
+    level_code = models.CharField(max_length=1, primary_key=True)
+    role_name = models.CharField(max_length=32, unique=True, null=False)
+    eng_role_name = models.CharField(max_length=32, null=False)
+
+## \class WorkerByRole
+## \brief Represents the association of a worker with a role.
+class WorkerByRole(models.Model):
+    level_code = models.ForeignKey(Role, on_delete=models.CASCADE)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    tensure_start_date = models.DateField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=models.Q(tensure_start_date__lte=models.functions.Now()), name='check_tens_st_date_le_curr_date'),
+            models.UniqueConstraint(fields=['level_code', 'worker'], name='primary_worker_role')
+        ]
+
+## \class LoginData
+## \brief Represents login data for a worker.
+class LoginData(models.Model):
+    worker_login = models.CharField(max_length=64, primary_key=True)
+    password = models.CharField(max_length=256, null=False)
+    worker = models.ForeignKey(WorkerByRole, on_delete=models.CASCADE)
 
 ## \class WorkerHistory
-## \brief Represents previous pairs of worker and their role.
+## \brief Represents the history of a worker's roles.
 class WorkerHistory(models.Model):
-    role_name = models.ForeignKey(Roles, on_delete=models.CASCADE) ## \brief Foreign key to Roles.
-    worker = models.ForeignKey(Worker, on_delete=models.CASCADE) ## \brief Foreign key to Worker.
-    tensure_start_date = models.DateField() ## \brief Start date of the tenure.
-    tensure_end_date = models.DateField() ## \brief End date of the tenure.
+    level_code = models.ForeignKey(Role, on_delete=models.CASCADE)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    tensure_start_date = models.DateField(null=False)
+    tensure_end_date = models.DateField(null=False)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=models.Q(tensure_start_date__lte=models.functions.Now()), name='check_tensure_start_date_le_current_date'),
+            models.CheckConstraint(check=models.Q(tensure_end_date__gte=models.F('tensure_start_date')), name='check_tensure_end_date_ge_tensure_start_date')
+        ]
 
 ## \class Course
 ## \brief Represents a course.
 class Course(models.Model):
-    course_name = models.CharField(max_length=128) ## \brief Name of the course.
+    course_id = models.AutoField(primary_key=True)
+    course_name = models.CharField(max_length=128, null=False)
 
-    def __str__(self):
-        return f'{self.course_name}'
+## \class MarkCategory
+## \brief Represents a category of marks.
+class MarkCategory(models.Model):
+    mark_category = models.CharField(max_length=32, primary_key=True)
+    description = models.CharField(max_length=96, null=False)
 
-## \class MarkCategories
-## \brief Represents categories of marks.
-class MarkCategories(models.Model):
-    mark_category = models.CharField(max_length=32, primary_key=True) ## \brief Category of the mark.
-    description = models.CharField(max_length=96) ## \brief Description of the mark category.
-
-    def __str__(self):
-        return f'{self.mark_category}'
-
-## \class MarkTypes
-## \brief Represents types of marks.
-class MarkTypes(models.Model):
-    description = models.CharField(max_length=512) ## \brief Description of the mark type.
-    min_value = models.SmallIntegerField() ## \brief Minimum value of the mark.
-    max_value = models.SmallIntegerField() ## \brief Maximum value of the mark.
-    mark_category = models.ForeignKey(MarkCategories, on_delete=models.CASCADE) ## \brief Foreign key to MarkCategories.
-
-## \class CourseByMarkTypes
-## \brief Represents the association between courses and mark types.
-class CourseByMarkTypes(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE) ## \brief Foreign key to Course.
-    mark_type = models.ForeignKey(MarkTypes, on_delete=models.CASCADE) ## \brief Foreign key to MarkTypes.
+## \class MarkType
+## \brief Represents a type of mark.
+class MarkType(models.Model):
+    mark_type_id = models.AutoField(primary_key=True)
+    description = models.CharField(max_length=512, null=False)
+    min_value = models.SmallIntegerField(null=False)
+    max_value = models.SmallIntegerField(null=False)
+    mark_category = models.ForeignKey(MarkCategory, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('course', 'mark_type')
+        constraints = [
+            models.CheckConstraint(check=models.Q(min_value__gte=0), name='check_min_value_gte_0'),
+            models.CheckConstraint(check=models.Q(max_value__gt=models.F('min_value')), name='check_max_value_gt_min_value')
+        ]
 
-## \class CourseAuthors
-## \brief Represents pairs of course authors.
-class CourseAuthors(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE) ## \brief Foreign key to Course.
-    author = models.ForeignKey(Worker, on_delete=models.CASCADE) ## \brief Foreign key to Worker.
+## \class CourseByMarkType
+## \brief Represents the association of a course with mark types.
+class CourseByMarkType(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    mark_type = models.ForeignKey(MarkType, on_delete=models.CASCADE)
 
     class Meta:
-        unique_together = ('course', 'author')
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'mark_type'], name='primary_course_by_mark')
+        ]
+
+## \class CourseAuthor
+## \brief Represents the authorship of a course.
+class CourseAuthor(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    author = models.ForeignKey(Worker, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'author'], name='primary_course_by_author')
+        ]
 
 ## \class GroupClass
-## \brief Represents a combination of group, teacher, and course.
+## \brief Represents a class within a group, associated with a teacher and a course.
 class GroupClass(models.Model):
-    group = models.ForeignKey(GroupTable, on_delete=models.CASCADE) ## \brief Foreign key to GroupTable.
-    teacher = models.ForeignKey(Worker, on_delete=models.CASCADE) ## \brief Foreign key to Worker.
-    course = models.ForeignKey(Course, on_delete=models.CASCADE) ## \brief Foreign key to Course.
-    creation_date = models.DateField(auto_now_add=True) ## \brief Date of creation.
+    class_id = models.AutoField(primary_key=True)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    creation_date = models.DateField(null=False)
 
     class Meta:
-        unique_together = ('teacher', 'group', 'course')
-        indexes = [
-            models.Index(fields=['teacher', 'group', 'course'], name='index_class_u'),
+        constraints = [
+            models.UniqueConstraint(fields=['teacher', 'group', 'course'], name='unique_class')
         ]
 
 ## \class ClassHistory
-## \brief Represents previous classes where the child was.
+## \brief Represents the history of classes a child has been in.
 class ClassHistory(models.Model):
-    child = models.ForeignKey(Child, on_delete=models.CASCADE) ## \brief Foreign key to Child.
-    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE) ## \brief Foreign key to GroupClass.
-    add_date = models.DateField(auto_now_add=True) ## \brief Date the child was added.
-    leave_date = models.DateField() ## \brief Date the child left the class.
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    class_instance = models.ForeignKey(GroupClass, on_delete=models.CASCADE)
+    add_date = models.DateField(null=False)
+    leave_date = models.DateField(null=False)
 
     class Meta:
-        unique_together = ('child', 'group_class')
-        indexes = [
-            models.Index(fields=['child', 'group_class'], name='index_class_history'),
+        constraints = [
+            models.CheckConstraint(check=models.Q(add_date__lte=models.functions.Now()), name='check_add_date_le_current_date'),
+            models.CheckConstraint(check=models.Q(leave_date__gte=models.F('add_date')), name='check_leave_date_ge_add_date'),
+            models.UniqueConstraint(fields=['child', 'class_instance'], name='primary_class_history')
         ]
 
-## \class CourseComments
-## \brief Represents comments about the course.
-class CourseComments(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE) ## \brief Foreign key to Course.
-    author = models.ForeignKey(Worker, on_delete=models.CASCADE) ## \brief Foreign key to Worker.
-    description = models.CharField(max_length=512) ## \brief Description of the comment.
+## \class CourseComment
+## \brief Represents comments about a course.
+class CourseComment(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    author = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    description = models.CharField(max_length=512, null=False)
 
     class Meta:
-        unique_together = ('course', 'author')
+        constraints = [
+            models.UniqueConstraint(fields=['course', 'author'], name='primary_course_comments')
+        ]
 
 ## \class ChildInfo
-## \brief Represents info about the child, such as comments.
+## \brief Represents information about a child, such as comments.
 class ChildInfo(models.Model):
-    child = models.ForeignKey(Child, on_delete=models.CASCADE) ## \brief Foreign key to Child.
-    author = models.ForeignKey(Worker, on_delete=models.CASCADE) ## \brief Foreign key to Worker.
-    description = models.CharField(max_length=512) ## \brief Description of the info.
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    author = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    description = models.CharField(max_length=512, null=False)
 
     class Meta:
-        unique_together = ('child', 'author')
+        constraints = [
+            models.UniqueConstraint(fields=['child', 'author'], name='primary_child_info')
+        ]
 
 ## \class ClassInfo
-## \brief Represents info about the class, written by a worker.
+## \brief Represents information about a class, written by a worker.
 class ClassInfo(models.Model):
-    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE) ## \brief Foreign key to GroupClass.
-    author = models.ForeignKey(Worker, on_delete=models.CASCADE) ## \brief Foreign key to Worker.
-    description = models.CharField(max_length=512) ## \brief Description of the info.
+    class_instance = models.ForeignKey(GroupClass, on_delete=models.CASCADE)
+    author = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    description = models.CharField(max_length=512, null=False)
 
     class Meta:
-        unique_together = ('group_class', 'author')
+        constraints = [
+            models.UniqueConstraint(fields=['class_instance', 'author'], name='primary_class_info')
+        ]
 
 ## \class Semester
-## \brief Represents a semester.
+## \brief Represents a semester with a start and end date.
 class Semester(models.Model):
-    start_date = models.DateField() ## \brief Start date of the semester.
-    end_date = models.DateField() ## \brief End date of the semester.
+    semester_id = models.AutoField(primary_key=True)
+    start_date = models.DateField(null=False)
+    end_date = models.DateField(null=False)
 
     class Meta:
-        indexes = [
-            models.Index(fields=['start_date'], name='index_semester_start'),
+        constraints = [
+            models.CheckConstraint(check=models.Q(end_date__gt=models.F('start_date')), name='check_end_date_gt_start_date')
         ]
 
 ## \class Lesson
-## \brief Represents a lesson for a class.
+## \brief Represents a lesson for a class within a semester.
 class Lesson(models.Model):
-    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE) ## \brief Foreign key to GroupClass.
-    lesson_date = models.DateTimeField() ## \brief Date of the lesson.
-    duration = models.SmallIntegerField() ## \brief Duration of the lesson.
-    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, null=True, blank=True) ## \brief Foreign key to Semester.
+    class_instance = models.ForeignKey(GroupClass, on_delete=models.CASCADE)
+    lesson_date = models.DateTimeField(null=False)
+    duration = models.SmallIntegerField(null=False)
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE, blank=True, null=True)
 
     class Meta:
-        unique_together = ('group_class', 'lesson_date')
-        indexes = [
-            models.Index(fields=['lesson_date'], name='index_lessons_date'),
-            models.Index(fields=['semester', 'group_class'], name='index_les_by_sem_and_class'),
+        constraints = [
+            models.UniqueConstraint(fields=['class_instance', 'lesson_date'], name='primary_lesson')
         ]
 
-## \class Reports
-## \brief Represents reports written by a worker about a class.
-class Reports(models.Model):
-    child = models.ForeignKey(Child, on_delete=models.CASCADE) ## \brief Foreign key to Child.
-    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE) ## \brief Foreign key to GroupClass.
-    semester = models.ForeignKey(Semester, on_delete=models.CASCADE) ## \brief Foreign key to Semester.
-    filename = models.CharField(max_length=128) ## \brief Filename of the report.
-    add_time = models.TimeField(auto_now_add=True) ## \brief Time the report was added.
+## \class Report
+## \brief Represents a report written by a worker about a class.
+class Report(models.Model):
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    class_instance = models.ForeignKey(GroupClass, on_delete=models.CASCADE)
+    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+    filename = models.CharField(max_length=128, null=False)
+    add_time = models.TimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('child', 'group_class', 'semester', 'filename')
-        indexes = [
-            models.Index(fields=['group_class', 'semester'], name='index_reports_by_class&sem'),
+        constraints = [
+            models.UniqueConstraint(fields=['child', 'class_instance', 'semester', 'filename'], name='primary_reports')
         ]
 
-## \class VisitTypes
-## \brief Represents types of class visits, such as "visited" or "not visited".
-class VisitTypes(models.Model):
-    visit_type_id = models.CharField(max_length=1, primary_key=True) ## \brief ID of the visit type.
-    description = models.CharField(max_length=96) ## \brief Description of the visit type.
+## \class VisitType
+## \brief Represents different types of class visits (e.g., visited, not visited).
+class VisitType(models.Model):
+    visit_type_id = models.CharField(max_length=1, primary_key=True)
+    description = models.CharField(max_length=96, null=False)
 
 ## \class Visits
 ## \brief Represents the fact of a visit.
@@ -271,7 +284,7 @@ class Visits(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE) ## \brief Foreign key to Child.
     group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE) ## \brief Foreign key to GroupClass.
     lesson_date = models.DateTimeField() ## \brief Date of the lesson.
-    visit_type = models.ForeignKey(VisitTypes, on_delete=models.CASCADE) ## \brief Foreign key to VisitTypes.
+    visit_type = models.ForeignKey(VisitType, on_delete=models.CASCADE) ## \brief Foreign key to VisitTypes.
 
     class Meta:
         unique_together = ('child', 'group_class', 'lesson_date')
@@ -284,7 +297,7 @@ class Visits(models.Model):
 ## \brief Represents marks given for a visit.
 class MarksForVisit(models.Model):
     visit = models.ForeignKey(Visits, on_delete=models.CASCADE) ## \brief Foreign key to Visits.
-    mark_type = models.ForeignKey(MarkTypes, on_delete=models.CASCADE) ## \brief Foreign key to MarkTypes.
+    mark_type = models.ForeignKey(MarkType, on_delete=models.CASCADE) ## \brief Foreign key to MarkTypes.
     mark = models.DecimalField(max_digits=3, decimal_places=1) ## \brief The mark given.
 
     class Meta:
@@ -292,5 +305,66 @@ class MarksForVisit(models.Model):
             models.Index(fields=['mark'], name='index_marks_value'),
         ]
 
-    def __str__(self):
-        return f'{self.mark}'
+@receiver(pre_save, sender=Lesson)
+def check_semester_in_lesson(sender, instance, **kwargs):
+    if instance.semester is None:
+        try:
+            instance.semester = Semester.objects.get(start_date__lte=instance.lesson_date, end_date__gte=instance.lesson_date)
+        except Semester.DoesNotExist:
+            raise ValidationError('Not correct lesson date')
+    else:
+        if not Semester.objects.filter(pk=instance.semester.pk, start_date__lte=instance.lesson_date, end_date__gte=instance.lesson_date).exists():
+            raise ValidationError('Not correct semester id')
+
+@receiver(pre_save, sender=Lesson)
+def check_add_lesson(sender, instance, **kwargs):
+    if Lesson.objects.filter(
+        models.Q(lesson_date__lte=instance.lesson_date, lesson_date__gte=instance.lesson_date) |
+        models.Q(lesson_date__lte=instance.lesson_date + instance.duration, lesson_date__gte=instance.lesson_date)
+    ).exists():
+        raise ValidationError('Incorrect lesson start time')
+    
+@receiver(pre_save, sender=Semester)
+def check_add_semester(sender, instance, **kwargs):
+    if Semester.objects.filter(
+        models.Q(start_date__lte=instance.start_date, end_date__gte=instance.start_date) |
+        models.Q(start_date__lte=instance.end_date, end_date__gte=instance.end_date)
+    ).exists():
+        raise ValidationError('Incorrect semester period')
+    
+@receiver(pre_save, sender=MarksForVisit)
+def check_mark_value(sender, instance, **kwargs):
+    if instance.mark > instance.mark_type.max_value:
+        raise ValidationError('Too big mark has been added')
+    
+@receiver(pre_save, sender=Child)
+def add_class_to_history(sender, instance, **kwargs):
+    if instance.pk:
+        old_instance = Child.objects.get(pk=instance.pk)
+        if old_instance.current_group != instance.current_group:
+            GroupClass.objects.filter(group_id=old_instance.current_group_id).update(
+                child_id=old_instance.child_id,
+                add_date=old_instance.add_to_group_date,
+                leave_date=now().date()
+            )
+            instance.add_to_group_date = now().date()
+@receiver(pre_save, sender=Worker)
+def add_to_history_when_dismissial(sender, instance, **kwargs):
+    if instance.dismissal_date:
+        WorkerByRole.objects.filter(worker=instance).delete()
+
+@receiver(pre_delete, sender=WorkerByRole)
+def add_to_history_when_delete(sender, instance, **kwargs):
+    LoginData.objects.filter(worker_id=instance.worker_id, level_code=instance.level_code).delete()
+    WorkerHistory.objects.create(
+        level_code=instance.level_code,
+        worker=instance.worker,
+        tensure_start_date=instance.tensure_start_date,
+        tensure_end_date=now().date()
+    )
+
+@receiver(pre_save, sender=WorkerByRole)
+def update_login_data(sender, instance, **kwargs):
+    if instance.pk:
+        old_instance = WorkerByRole.objects.get(pk=instance.pk)
+        LoginData.objects.filter(worker_id=old_instance.worker_id, level_code=old_instance.level_code).update(level_code=instance.level_code)
