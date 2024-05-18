@@ -76,6 +76,13 @@ CREATE OR REPLACE FUNCTION add_class_to_history()
 RETURNS trigger AS
 $$
 BEGIN
+    IF NOT EXISTS (SELECT 1 FROM group_table g 
+                      INNER JOIN tracks_type t ON t.track_type_id = g.group_id 
+                      WHERE extract(year from OLD.birthday) >= t.start_age AND 
+                      extract(year from OLD.birthday) <= t.end_age) THEN
+        RAISE EXCEPTION 'Incorrect ';
+    END IF;
+
     INSERT INTO class_history(child_id, class_id, add_date, leave_date) VALUES (
         (SELECT NEW.child_id AS cid, c.class_id, OLD.add_to_group_date AS add_d, CURRENT_DATE 
 		FROM group_class c WHERE group_id = OLD.current_group_id)
@@ -107,8 +114,8 @@ CREATE OR REPLACE FUNCTION add_to_history_when_delete()
 RETURNS trigger AS
 $$
 BEGIN
-    INSERT INTO worker_history(role_name, worker_id, tensure_start_date, tensure_end_date) VALUES (
-        (SELECT w.role_name, w.worker_id, w.tensure_start_date, CURRENT_DATE 
+    INSERT INTO worker_history(level_code, worker_id, tensure_start_date, tensure_end_date) VALUES (
+        (SELECT w.level_code, w.worker_id, w.tensure_start_date, CURRENT_DATE 
 		FROM worker_by_role WHERE group_id = OLD.current_group_id)
 	);
 
