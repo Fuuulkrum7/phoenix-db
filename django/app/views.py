@@ -43,9 +43,9 @@ def custom_login(request):
                 # Определение роли пользователя
                 try:
                     login_data = LoginData.objects.get(worker_login=username)
-                    worker = login_data.worker.worker
+                    worker = login_data.worker
                     worker_roles = WorkerByRole.objects.filter(worker=worker)
-                    roles = [role.level_code.level_code for role in worker_roles]
+                    roles = [role.level_code for role in worker_roles]
 
                     # Сохраняем данные в сессии
                     request.session['username'] = username

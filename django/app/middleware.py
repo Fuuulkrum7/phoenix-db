@@ -20,8 +20,8 @@ class RoleBasedAccessMiddleware:
             current_url = request.path
             forbidden_urls_for_role = self.forbidden_urls.get(user_role, [])
 
-            if any(current_url.startswith(url) for url in forbidden_urls_for_role):
-                return redirect('forbidden')
+            # if any(current_url.startswith(url) for url in forbidden_urls_for_role):
+            #     return redirect('forbidden')
 
         response = self.get_response(request)
         return response
