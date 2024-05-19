@@ -2,19 +2,23 @@
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
-from .models import LoginData, WorkerByRole
+from .models import LoginData, WorkerByRole, Role
 from django.http import HttpResponse
 
+
+## Custom login view that handles user authentication and role-based redirection.
+#  @param request The HTTP request object.
+#  Authenticates the user, determines their role, and redirects to the appropriate page based on their role.
+#  If the user is already authenticated, it immediately redirects based on the role saved in the session.
+#  If the login fails or user data is not found, it redirects to the login page.
+#  Supports roles like Admin ('A'), Tutor ('T'), Curator ('C'), and Methodist ('M').
+#
 def custom_login(request):
     if request.user.is_authenticated:
         try:
             login_data = LoginData.objects.get(worker_login=request.user.username)
             worker = login_data.worker
-            worker_role = WorkerByRole.objects.filter(worker=worker).order_by('-level_code')
-            if len(worker_role):
-                worker_role = worker_role[0]
-            else:
-                return redirect('/')
+            worker_role = WorkerByRole.objects.filter(worker=worker)[0]
             
             role = worker_role.level_code
             request.session['user_id'] = worker.worker_id
@@ -69,5 +73,9 @@ def custom_login(request):
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
 
+## Basic index view that returns a simple greeting message.
+#  @param request The HTTP request object.
+#  This view serves as the entry point for the application, greeting with a simple message.
+#
 def index(request):
     return HttpResponse("Hello, world! This is the index page.")
