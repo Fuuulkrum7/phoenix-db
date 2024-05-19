@@ -1,10 +1,13 @@
 # core/views/tutor_views.py
-
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from app.models import Worker, WorkerByRole, Group, GroupClass, Child, Course
 
+## Displays the interface to edit attendance records.
+#  @param request The HTTP request object.
+#  Only accessible to logged-in users.
+#
 @login_required
 def tutor_view(request):
     # Получаем текущего пользователя и его рабочую запись
