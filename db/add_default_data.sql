@@ -17,8 +17,4 @@ INSERT INTO mark_types(description, min_value, max_value, mark_category) VALUES
     ('Обзывает, оскорбляет участников группы или ведущих, ругается матом, грубо выражается', 0, 3, 'Трудное поведение'),
     ('Отказывается присоединиться к деятельности и заявляет об этом вслух', 0, 3, 'Трудное поведение');
 
-INSERT INTO roles(role_name, eng_role_name, level_code) VALUES 
-    ('Куратор', 'Curator', 'C'),
-    ('Ведущий', 'Tutor', 'T')
-    ('Методист', 'Methodist', 'M'),
-    ('Администратор', 'Admin', 'A');
+
