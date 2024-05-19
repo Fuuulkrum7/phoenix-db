@@ -1,4 +1,3 @@
-<!-- core/templates/core/schedule.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -20,7 +19,7 @@
             </div>
             <button type="submit" class="btn btn-primary mb-2">Filter</button>
         </form>
-        
+
         {% if can_add_lesson %}
             <a href="{% url 'add_lesson' %}" class="btn btn-success mb-3">Add Lesson</a>
         {% endif %}
@@ -40,10 +39,10 @@
             <tbody>
                 {% for lesson in lessons %}
                     <tr>
-                        <td>{{ lesson.date }}</td>
-                        <td>{{ lesson.start_time }} - {{ lesson.end_time }}</td>
-                        <td>{{ lesson.name }}</td>
-                        <td>{{ lesson.group.name }}</td>
+                        <td>{{ lesson.lesson_date.date }}</td>
+                        <td>{{ lesson.lesson_date.time }}</td>
+                        <td>{{ lesson.class_instance.groupclass.cource.course_name}}</td>
+                        <td>{{ lesson.class_instance.group.group_name }}</td>
                         {% if can_add_lesson %}
                             <td>
                                 <a href="{% url 'edit_lesson' lesson.pk %}" class="btn btn-primary btn-sm">Edit</a>
