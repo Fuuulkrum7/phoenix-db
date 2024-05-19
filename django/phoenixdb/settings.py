@@ -147,6 +147,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_REDIRECT_URL = '/tutor/'
 LOGOUT_REDIRECT_URL = '/login/'
 
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'app.middleware.RoleBasedAccessMiddleware',  # Добавляем наше кастомное middleware
+]
+
 ## @var DEFAULT_AUTO_FIELD
 #  The default type of primary key to use for new models if the model doesn’t explicitly specify.
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
