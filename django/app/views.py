@@ -11,9 +11,9 @@ def custom_login(request):
     if request.user.is_authenticated:
         try:
             login_data = LoginData.objects.get(worker_login=request.user.username)
-            worker = login_data.worker.worker
-            worker_role = WorkerByRole.objects.get(worker=worker)
-            role = worker_role.level_code.level_code
+            worker = login_data.worker
+            worker_role = WorkerByRole.objects.filter(worker=worker)[0]
+            role = worker_role.level_code
             request.session['user_id'] = worker.worker_id
             request.session['user_role'] = role
             if role == 'A':

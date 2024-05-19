@@ -106,7 +106,7 @@ class WorkerByRole(models.Model):
 class LoginData(models.Model):
     worker_login = models.CharField(max_length=64, primary_key=True)
     password = models.CharField(max_length=256, null=False)
-    worker = models.ForeignKey(WorkerByRole, on_delete=models.CASCADE)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
 
 ## \class WorkerHistory
 ## \brief Represents the history of a worker's roles.
