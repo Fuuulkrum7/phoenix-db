@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS tracks_type(
 -- group of child
 CREATE TABLE IF NOT EXISTS group_table(
     group_id SERIAL PRIMARY KEY,
+    group_name VARCHAR(64) NOT NULL,
     track_type SMALLINT REFERENCES tracks_type(track_type_id)
 );
 
@@ -119,6 +120,13 @@ CREATE TABLE IF NOT EXISTS course_authors(
     CONSTRAINT primary_course_by_author PRIMARY KEY (course_id, author_id)
 );
 
+CREATE TABLE IF NOT EXISTS group_creators(
+    group_id SMALLINT NOT NULL REFERENCES group_table(group_id),
+    curator_id INT NOT NULL REFERENCES worker(worker_id),
+
+    CONSTRAINT primary_group_by_creator PRIMARY KEY (group_id, curator_id)
+);
+
 -- comnbination of group, teacher (worker with specific type) and course
 CREATE TABLE IF NOT EXISTS group_class(
     class_id BIGSERIAL PRIMARY KEY,
@@ -194,19 +202,14 @@ CREATE TABLE IF NOT EXISTS reports(
     CONSTRAINT primary_reports PRIMARY KEY (child_id, class_id, semester_id, filename)
 );
 
--- types of class visit, like has visited, has not visited etc
-CREATE TABLE IF NOT EXISTS visit_types(
-    visit_type_id char(1) PRIMARY KEY,
-    description VARCHAR(96) NOT NULL
-);
-
 -- fact of visit
 CREATE TABLE IF NOT EXISTS visits(
     visit_id BIGSERIAL PRIMARY KEY,
     child_id INT NOT NULL REFERENCES child(child_id),
     class_id INT NOT NULL,
     lesson_date TIMESTAMP NOT NULL,
-    visit_type char(1) NOT NULL REFERENCES visit_types(visit_type_id),
+    description VARCHAR(96) NOT NULL,
+    visited BOOLEAN NOT NULL DEFAULT true;
 	
 	CONSTRAINT fk_lessons_from_visits FOREIGN KEY (class_id, lesson_date) REFERENCES lesson(class_id, lesson_date),
     CONSTRAINT unique_visit UNIQUE(child_id, class_id, lesson_date)
