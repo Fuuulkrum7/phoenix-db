@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.urls import include, path
 from app.views import custom_login
 from django.contrib.auth import views as auth_views
+from core.views.visit_views import add_visit
 from django.shortcuts import redirect
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('child/', include('core.urls.child')),
     path('statistics/', include('core.urls.statistics')),
     path('', lambda request: redirect('login')),
+    path('add-visit/<int:class_id>/', add_visit, name='add_visit')
 ]

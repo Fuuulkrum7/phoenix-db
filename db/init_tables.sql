@@ -208,7 +208,7 @@ CREATE TABLE IF NOT EXISTS visits(
     child_id INT NOT NULL REFERENCES child(child_id),
     class_id INT NOT NULL,
     lesson_date TIMESTAMP NOT NULL,
-    description VARCHAR(96) NOT NULL,
+    description VARCHAR(96),
     visited BOOLEAN NOT NULL DEFAULT true;
 	
 	CONSTRAINT fk_lessons_from_visits FOREIGN KEY (class_id, lesson_date) REFERENCES lesson(class_id, lesson_date),

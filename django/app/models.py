@@ -280,7 +280,7 @@ class Visits(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
     group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE)
     lesson_date = models.DateTimeField(null=False)
-    description = models.CharField(max_length=96, null=False)
+    description = models.CharField(max_length=96, null=True)
     visited = models.BooleanField(default=True)
 
     class Meta:
