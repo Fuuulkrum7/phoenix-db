@@ -17,6 +17,11 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'phoenixdb.settings')
 django.setup()
 
 # Retrieve superuser credentials from environment variables.
+=======
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'phoenixdb.settings')
+
+django.setup()
+
 username = os.getenv('DJANGO_SUPERUSER_USERNAME')
 email = os.getenv('DJANGO_SUPERUSER_EMAIL')
 password = os.getenv('DJANGO_SUPERUSER_PASSWORD')
@@ -30,3 +35,4 @@ if not User.objects.filter(username=username).exists():
     print(f'Superuser {username} created')  # Inform about the creation of the superuser.
 else:
     print(f'Superuser {username} already exists')  # Inform if the superuser already exists.
+
