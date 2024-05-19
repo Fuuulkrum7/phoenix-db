@@ -50,7 +50,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'app.middleware.RoleBasedAccessMiddleware',
 ]
+
 
 ## @var ROOT_URLCONF
 #  A string representing the full Python import path to your root URLconf.
