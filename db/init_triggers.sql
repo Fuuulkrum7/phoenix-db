@@ -83,10 +83,9 @@ BEGIN
         RAISE EXCEPTION 'Incorrect ';
     END IF;
 
-    INSERT INTO class_history(child_id, class_id, add_date, leave_date) VALUES (
-        (SELECT NEW.child_id AS cid, c.class_id, OLD.add_to_group_date AS add_d, CURRENT_DATE 
-		FROM group_class c WHERE group_id = OLD.current_group_id)
-	);
+    INSERT INTO class_history(child_id, class_id, add_date, leave_date) 
+        SELECT NEW.child_id AS cid, c.class_id, OLD.add_to_group_date AS add_d, CURRENT_DATE 
+		FROM group_class c WHERE group_id = OLD.current_group_id;
     
     NEW.add_to_group_date = CURRENT_DATE;
 

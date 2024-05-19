@@ -23,7 +23,9 @@ class TrackType(models.Model):
 ## \brief Represents a group of children.
 class Group(models.Model):
     group_id = models.AutoField(primary_key=True)
+    group_name = models.CharField(max_length=64, null=False)
     track_type = models.ForeignKey(TrackType, on_delete=models.CASCADE)
+
 
 ## \class Child
 ## \brief Represents a child enrolled in the system.
@@ -272,25 +274,38 @@ class Report(models.Model):
             models.UniqueConstraint(fields=['child', 'class_instance', 'semester', 'filename'], name='primary_reports')
         ]
 
-## \class VisitType
-## \brief Represents different types of class visits (e.g., visited, not visited).
-class VisitType(models.Model):
-    visit_type_id = models.CharField(max_length=1, primary_key=True)
-    description = models.CharField(max_length=96, null=False)
-
-## \class Visits
-## \brief Represents the fact of a visit.
+## \class Visit
+## \brief Represents a visit record for a child to a lesson.
 class Visits(models.Model):
-    child = models.ForeignKey(Child, on_delete=models.CASCADE) ## \brief Foreign key to Child.
-    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE) ## \brief Foreign key to GroupClass.
-    lesson_date = models.DateTimeField() ## \brief Date of the lesson.
-    visit_type = models.ForeignKey(VisitType, on_delete=models.CASCADE) ## \brief Foreign key to VisitTypes.
+    visit_id = models.AutoField(primary_key=True)
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
+    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE)
+    lesson_date = models.DateTimeField(null=False)
+    description = models.CharField(max_length=96, null=False)
+    visited = models.BooleanField(default=True)
 
     class Meta:
-        unique_together = ('child', 'group_class', 'lesson_date')
-        indexes = [
-            models.Index(fields=['child', 'group_class', 'lesson_date'], name='index_visits_u'),
-            models.Index(fields=['group_class', 'lesson_date'], name='index_visits_by_lesson'),
+        constraints = [
+            models.UniqueConstraint(fields=['child', 'group_class', 'lesson_date'], name='unique_visit')
+        ]
+    def clean(self):
+        super().clean()
+        if not Lesson.objects.filter(group_class=self.group_class, lesson_date=self.lesson_date).exists():
+            raise ValidationError('Invalid combination of class_instance and lesson_date.')
+
+@receiver(pre_save, sender=Visits)
+def validate_visit(sender, instance, **kwargs):
+    instance.clean()
+
+## \class GroupCreators
+## \brief Represents the association between a group and its curator.
+class GroupCreators(models.Model):
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    curator = models.ForeignKey(Worker, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['group', 'curator'], name='primary_group_by_creator')
         ]
 
 ## \class MarksForVisit
