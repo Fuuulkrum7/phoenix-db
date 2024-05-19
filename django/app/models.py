@@ -26,6 +26,7 @@ class Group(models.Model):
     group_name = models.CharField(max_length=64, null=False)
     track_type = models.ForeignKey(TrackType, on_delete=models.CASCADE)
 
+
 ## \class Child
 ## \brief Represents a child enrolled in the system.
 class Child(models.Model):
@@ -295,6 +296,17 @@ class Visits(models.Model):
 @receiver(pre_save, sender=Visits)
 def validate_visit(sender, instance, **kwargs):
     instance.clean()
+
+## \class GroupCreators
+## \brief Represents the association between a group and its curator.
+class GroupCreators(models.Model):
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)
+    curator = models.ForeignKey(Worker, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['group', 'curator'], name='primary_group_by_creator')
+        ]
 
 ## \class MarksForVisit
 ## \brief Represents marks given for a visit.
