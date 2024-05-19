@@ -79,8 +79,8 @@ INSERT INTO app_workerbyrole(level_code_id, worker_id, tensure_start_date)
     ('M', 2, CURRENT_DATE),
     ('C', 3, CURRENT_DATE);
 
-INSERT INTO app_groupcreator(group_id, curator_id)
-    SELECT group_id, 3 as curator FROM group_table;
+INSERT INTO app_groupcreators(group_id, curator_id)
+    SELECT group_id, 3 as curator FROM app_group;
 
 INSERT INTO app_course(course_name) 
     VALUES
@@ -117,4 +117,5 @@ INSERT INTO app_semester(start_date, end_date)
     ('2024.01.01', '2024.03.30'),
     ('2024.03.31', CURRENT_DATE);
 
-
+INSERT INTO app_logindata VALUES
+  ('hello', 'hash', 1);

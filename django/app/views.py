@@ -16,9 +16,9 @@ def custom_login(request):
                 login(request, user)
                 try:
                     login_data = LoginData.objects.get(worker_login=username)
-                    worker = login_data.worker.worker
-                    worker_role = WorkerByRole.objects.get(worker=worker)
-                    role = worker_role.level_code.level_code
+                    worker = login_data.worker
+                    worker_role = WorkerByRole.objects.filter(worker=worker).order_by('-level_code')[0]
+                    role = worker_role.level_code
 
                     if role == 'A':
                         return redirect('/admin/')

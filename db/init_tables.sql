@@ -69,8 +69,7 @@ CREATE TABLE IF NOT EXISTS worker_by_role(
 CREATE TABLE IF NOT EXISTS login_data(
     worker_login VARCHAR(64) PRIMARY KEY,
     password CHAR(256) NOT NULL,
-    worker_id INT NOT NULL,
-    level_code CHAR(1) NOT NULL,
+    worker_id INT NOT NULL
 
     CONSTRAINT worker_to_login FOREIGN KEY(worker_id, level_code) REFERENCES worker_by_role(worker_id, level_code)
 );
