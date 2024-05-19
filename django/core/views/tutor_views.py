@@ -1,4 +1,3 @@
-# core/views/tutor_views.py
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -10,13 +9,25 @@ from app.models import Worker, WorkerByRole, Group, GroupClass, Child, Course
 #
 @login_required
 def tutor_view(request):
-    # Получаем текущего пользователя и его рабочую запись
+    """
+    @brief Displays the interface to edit attendance records.
+
+    This view renders the tutor interface for managing attendance. It retrieves the current user's
+    worker record and the groups they lead. If a specific group is selected, it gathers detailed
+    information about the group's leader, curator, children, and courses.
+
+    @param request The HTTP request object containing metadata about the request.
+
+    @return The rendered tutor.html page with the context data including groups, selected group,
+            leader, curator, children, and courses.
+    """
+    # Get the current user and their worker record
     current_worker = get_object_or_404(Worker, worker_id=request.session['user_id'])
     
-    # Получаем группы, которыми руководит текущий пользователь
+    # Get the groups led by the current user
     groups = Group.objects.filter(groupclass__teacher=current_worker).distinct()
     
-    # Получаем выбранную группу из параметров запроса
+    # Get the selected group from request parameters
     selected_group_id = request.GET.get('group')
     selected_group = None
     leader, curator = None, None
@@ -25,17 +36,18 @@ def tutor_view(request):
     if selected_group_id:
         selected_group = get_object_or_404(Group, group_id=selected_group_id)
         
-        # Получаем лидера и куратора выбранной группы
+        # Get the leader and curator of the selected group
         group_class = get_object_or_404(GroupClass, group=selected_group, teacher=current_worker)
         leader = group_class.teacher
         curator = WorkerByRole.objects.filter(worker=leader, level_code='C').first()
         
-        # Получаем всех детей в выбранной группе
+        # Get all children in the selected group
         children = Child.objects.filter(current_group=selected_group)
         
-        # Получаем все курсы, которые проходит выбранная группа
+        # Get all courses taken by the selected group
         courses = Course.objects.filter(groupclass__group=selected_group).distinct()
 
+    # Prepare context data for the template rendering
     context = {
         'groups': groups,
         'selected_group': selected_group,
@@ -45,4 +57,5 @@ def tutor_view(request):
         'courses': courses
     }
 
+    # Render and return the template with the context data
     return render(request, 'core/tutor.html', context)
