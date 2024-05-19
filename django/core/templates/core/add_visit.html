@@ -1,4 +1,3 @@
-<!-- core/templates/core/add_visit.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,16 +6,24 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script>
-        $(document).ready(function(){
-            $('input[type="checkbox"]').change(function(){
-                if(!this.checked) {
-                    $(this).closest('tr').find('textarea').show();
-                } else {
+        $(document).ready(function() {
+            // Hide all textareas initially
+            $('textarea').hide();
+
+            // Show/hide textarea based on checkbox state
+            $('input[type="checkbox"]').change(function() {
+                if (this.checked) {
                     $(this).closest('tr').find('textarea').hide();
+                } else {
+                    $(this).closest('tr').find('textarea').show();
                 }
             });
-            $('input[type="checkbox"]').each(function(){
-                if(!this.checked) {
+
+            // Check initial state of checkboxes and show/hide textarea accordingly
+            $('input[type="checkbox"]').each(function() {
+                if (this.checked) {
+                    $(this).closest('tr').find('textarea').hide();
+                } else {
                     $(this).closest('tr').find('textarea').show();
                 }
             });
@@ -28,6 +35,17 @@
         <h1>Add Visits for {{ group_class.group.group_name }} - {{ group_class.course.course_name }}</h1>
         <form method="post">
             {% csrf_token %}
+            <div class="form-group">
+                <label for="lesson">Lesson:</label>
+                <select name="lesson" id="lesson" class="form-control" required>
+                    {% for lesson in lessons %}
+                        <option value="{{ lesson.id }}">
+                            {{ lesson.lesson_date|date:"d.m.Y H:i" }} - {{ lesson.end_time|date:"H:i" }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -40,6 +58,19 @@
                     {% for item in child_form_list %}
                         <tr>
                             <td>{{ forloop.counter }}. {{ item.child.name }} {{ item.child.surname }}</td>
-                            <td>{{ item.form.visited }}</td>
-                            <td>{{ item.form.reason }}</td>
+                            <td>
+                                <input type="hidden" name="child_id_{{ item.child.child_id }}" value="{{ item.child.child_id }}">
+                                <input type="checkbox" name="visited_{{ item.child.child_id }}" checked>
+                            </td>
+                            <td>
+                                <textarea name="description_{{ item.child.child_id }}" id="description_{{ item.child.child_id }}" class="form-control"></textarea>
+                            </td>
                         </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <button type="submit" class="btn btn-primary">Save Visits</button>
+        </form>
+    </div>
+</body>
+</html>
