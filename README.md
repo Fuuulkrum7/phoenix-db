@@ -45,30 +45,25 @@ Change into the repository directory:
 cd phoenix-bd
 ```
 
-## If you are on Linux, you need to use sudo to run next commands:
+* If you are on Linux, you need to use sudo to run next commands:
 
-Build the Docker image:
-
+# Build the Docker image:
+For Linux:
 ```
-docker-compose up --build -d
+sudo  ./init.sh
 ```
-
-* If you get an error about the database not existing, run:
-
+For Windows:
 ```
-docker-compose exec db psql -U admin -d huonix
-
-create database huonix;
-
-\q
+init.bat
 ```
-Then docker-compose succesfully builded the image(you can check it with docker-compose ps).
+# Restart the Docker Compose:
+For Linux:
 ```
-docker-compose exec web python manage.py createsuperuser
-
-docker-compose exec web python manage.py makemigrations app
-
-docker-compose exec web python manage.py migrate
+sudo ./restart.sh
+```
+For Windows:
+```
+restart.bat
 ```
 
 ## Doxygen

@@ -1,8 +1,8 @@
-INSERT INTO mark_categories(mark_category, description) VALUES 
+INSERT INTO app_markcategory(mark_category, description) VALUES 
     ('Социальные навыки', 'Навыки, описывающие способность ребенка к корректному социальному взаимодейтсвию'),
     ('Трудное поведение', 'Параметры, отражащии девиации в поведении ребенка');
 
-INSERT INTO mark_types(description, min_value, max_value, mark_category) VALUES
+INSERT INTO app_marktype(description, min_value, max_value, mark_category_id) VALUES
     ('Конструктивно воспринимает неуспех (спокойно реагирует на возникающие проблемы)', 0, 3, 'Социальные навыки'),
     ('Понимает свои границы во время взаимодействия с другими', 0, 3, 'Социальные навыки'),
     ('Понимает чужие границы', 0, 3, 'Социальные навыки'),
@@ -17,8 +17,8 @@ INSERT INTO mark_types(description, min_value, max_value, mark_category) VALUES
     ('Обзывает, оскорбляет участников группы или ведущих, ругается матом, грубо выражается', 0, 3, 'Трудное поведение'),
     ('Отказывается присоединиться к деятельности и заявляет об этом вслух', 0, 3, 'Трудное поведение');
 
-INSERT INTO roles(role_name, eng_role_name, level_code) VALUES 
+INSERT INTO app_role(role_name, eng_role_name, level_code) VALUES 
     ('Куратор', 'Curator', 'C'),
-    ('Ведущий', 'Tutor', 'T')
+    ('Ведущий', 'Tutor', 'T'),
     ('Методист', 'Methodist', 'M'),
     ('Администратор', 'Admin', 'A');
