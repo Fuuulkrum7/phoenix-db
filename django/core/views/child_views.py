@@ -9,7 +9,7 @@
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from app.models import Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group, TrackType, Visits, MarksForVisit, VisitType, MarkCategory, MarkType
+from app.models import Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group, TrackType, Visits, MarksForVisit,  MarkCategory, MarkType
 
 ## Displays detailed information about a specific child.
 #  @param request The HTTP request object.
@@ -19,6 +19,7 @@ from app.models import Child, ChildInfo, Parent, ParentPhone, ClassHistory, Grou
 #
 @login_required
 def child(request, child_id):
+    child_data = Child.objects.get(child_id=child_id)
     # Fetch the main child record.
     child_data = Child.objects.get(child_id=child_id)
 
@@ -28,6 +29,7 @@ def child(request, child_id):
     parent_phones = ParentPhone.objects.filter(parent__in=parents)
     group_history = ClassHistory.objects.filter(child=child_data)
     upcoming_lessons = Visits.objects.filter(child=child_data).select_related('group_class')
+
     marks = MarksForVisit.objects.filter(visit__child=child_data).select_related('mark_type', 'visit')
 
     # Prepare context data for the template rendering.
@@ -40,6 +42,5 @@ def child(request, child_id):
         'upcoming_lessons': upcoming_lessons,
         'marks': marks
     }
-
     # Render and return the template with the context data.
     return render(request, 'core/child.html', context)
