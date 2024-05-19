@@ -4,6 +4,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
 from .models import LoginData, WorkerByRole, Role
 from django.http import HttpResponse
+
 def custom_login(request):
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
@@ -13,8 +14,6 @@ def custom_login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-
-                # Определение роли пользователя
                 try:
                     login_data = LoginData.objects.get(worker_login=username)
                     worker = login_data.worker.worker
