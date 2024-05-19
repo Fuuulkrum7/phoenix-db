@@ -1,22 +1,8 @@
 # core/views/child_views.py
-## @package core
-#  Contains the view functions related to children within the application.
-#
-
-## @file child_views
-#  Manages the presentation logic for child-specific features such as detailed profiles, historical academic records, and contact information.
-#
-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from app.models import Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group, TrackType, Visits, MarksForVisit,  MarkCategory, MarkType
+from app.models import Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group, TrackType, Visits, MarksForVisit, Course
 
-## Displays detailed information about a specific child.
-#  @param request The HTTP request object.
-#  @param child_id The unique identifier of the child.
-#  This view compiles extensive information about the child including basic info, parents' contacts, group history, upcoming lessons, and academic marks.
-#  This view is protected to ensure only logged-in users can access the information.
-#
 @login_required
 def child(request, child_id):
     # Fetch the main child record.
@@ -30,6 +16,9 @@ def child(request, child_id):
     upcoming_lessons = Visits.objects.filter(child=child_data).select_related('group_class')
     marks = MarksForVisit.objects.filter(visit__child=child_data).select_related('mark_type', 'visit')
 
+    # Collect courses
+    courses = Course.objects.filter(groupclass__group__child=child_data).distinct()
+
     # Prepare context data for the template rendering.
     context = {
         'child': child_data,
@@ -38,8 +27,8 @@ def child(request, child_id):
         'parent_phones': parent_phones,
         'group_history': group_history,
         'upcoming_lessons': upcoming_lessons,
-        'marks': marks
+        'marks': marks,
+        'courses': courses,
     }
-
     # Render and return the template with the context data.
     return render(request, 'core/child.html', context)

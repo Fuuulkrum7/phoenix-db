@@ -1,4 +1,4 @@
-# app/middleware.py
+
 ## @package app
 #  Contains middleware components for the application.
 #
@@ -28,6 +28,7 @@ class RoleBasedAccessMiddleware:
             'M': ['/tutor/', '/curator/', '/admin/'],
             'A': []
         }
+
 
     ## Middleware call method.
     #  @param request The HTTP request object.

@@ -3,10 +3,9 @@ from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from app.models import Worker, Group, Child, Course, WorkerByRole
 
-## Displays the main tutor interface.
+## Displays the interface to edit attendance records.
 #  @param request The HTTP request object.
-#  Retrieves the tutor's associated groups, selected group details, leaders, curators, volunteers, children in the group, and courses.
-#  Redirects to login if the user is not authenticated or session information is missing.
+#  Only accessible to logged-in users.
 #
 @login_required
 def tutor(request):
