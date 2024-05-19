@@ -3,6 +3,7 @@ from django.db.models.signals import pre_save, pre_delete
 from django.dispatch import receiver
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now
+from django.db.models import Avg
 
 ## \class TrackType
 ## \brief Represents the types of tracks for different age groups.
@@ -319,6 +320,22 @@ class MarksForVisit(models.Model):
         indexes = [
             models.Index(fields=['mark'], name='index_marks_value'),
         ]
+    
+    @classmethod
+    def get_skill_analysis(cls, child_id, start_date, end_date):
+        return cls.objects.filter(
+            visit__child_id=child_id,
+            visit__lesson_date__range=(start_date, end_date),
+            mark_type__mark_category__description='Социальные навыки'
+        ).aggregate(Avg('mark'))
+
+    @classmethod
+    def get_behavior_analysis(cls, child_id, start_date, end_date):
+        return cls.objects.filter(
+            visit__child_id=child_id,
+            visit__lesson_date__range=(start_date, end_date),
+            mark_type__mark_category__description='Трудное поведение'
+        ).aggregate(Avg('mark'))
 
 @receiver(pre_save, sender=Lesson)
 def check_semester_in_lesson(sender, instance, **kwargs):

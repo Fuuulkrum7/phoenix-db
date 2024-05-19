@@ -47,20 +47,6 @@
                                 <td>Leader</td>
                             </tr>
                         {% endfor %}
-                        {% for person in curators %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ person.full_name }}</td>
-                                <td>Curator</td>
-                            </tr>
-                        {% endfor %}
-                        {% for person in volunteers %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ person.full_name }}</td>
-                                <td>Volunteer</td>
-                            </tr>
-                        {% endfor %}
                     </tbody>
                 </table>
 
