@@ -45,5 +45,9 @@ def custom_login(request):
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
 
+## Basic index view that returns a simple greeting message.
+#  @param request The HTTP request object.
+#  This view serves as the entry point for the application, greeting with a simple message.
+#
 def index(request):
     return HttpResponse("Hello, world! This is the index page.")
