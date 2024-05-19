@@ -57,13 +57,11 @@ MIDDLEWARE = [
 #  This tells Django where to find the URL configuration for the project.
 ROOT_URLCONF = 'phoenixdb.urls'
 
-## @var TEMPLATES
-#  Configuration for Django templates.
-#  Specifies backend, directories, and options for template processing.
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / "templates"],
+        'DIRS': [BASE_DIR / 'accounts/templates', BASE_DIR / 'core/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -108,8 +106,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-## @var LANGUAGE_CODE
-#  Default language code for the Django application.
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 LANGUAGE_CODE = 'en-us'
 
 ## @var TIME_ZONE
@@ -143,6 +143,9 @@ MEDIA_URL = '/media/'
 ## @var MEDIA_ROOT
 #  The absolute path to the directory where all uploaded media files are stored.
 MEDIA_ROOT = BASE_DIR / 'media'
+
+LOGIN_REDIRECT_URL = '/tutor/'
+LOGOUT_REDIRECT_URL = '/login/'
 
 ## @var DEFAULT_AUTO_FIELD
 #  The default type of primary key to use for new models if the model doesn’t explicitly specify.
