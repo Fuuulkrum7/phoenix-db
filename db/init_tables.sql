@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS tracks_type(
 -- group of child
 CREATE TABLE IF NOT EXISTS group_table(
     group_id SERIAL PRIMARY KEY,
+    group_name VARCHAR(64) NOT NULL,
     track_type SMALLINT REFERENCES tracks_type(track_type_id)
 );
 

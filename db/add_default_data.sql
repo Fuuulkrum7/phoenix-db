@@ -22,3 +22,32 @@ INSERT INTO roles(role_name, eng_role_name, level_code) VALUES
     ('Ведущий', 'Tutor', 'T'),
     ('Методист', 'Methodist', 'M'),
     ('Администратор', 'Admin', 'A');
+
+INSERT INTO app_tracktype(start_age, end_age, max_lessons_number) VALUES 
+    (7, 11, 1),
+    (11, 15, 2);
+
+INSERT INTO app_group(group_name, track_type_id)
+ VALUES
+    ('Дети', (SELECT track_type_id FROM app_tracktype WHERE start_age = 7)),
+    ('Подростки', (SELECT track_type_id FROM app_tracktype WHERE start_age = 11));
+
+INSERT INTO app_child(name, surname, birthday, current_group_id, add_to_group_date, gender)
+    VALUES
+    ('Вася', 'Петров', '01.02.2015', (SELECT group_id from app_group WHERE group_name='Дети'), CURRENT_DATE, 'М'),
+    ('Оля', 'Петрова', '05.09.2014', (SELECT group_id from app_group WHERE group_name='Дети'), CURRENT_DATE, 'Ж'),
+    ('Вика', 'Сидорова', '03.01.2015', (SELECT group_id from app_group WHERE group_name='Дети'), CURRENT_DATE, 'Ж'),
+    ('Альберт', 'Энштейн', '11.02.2010', (SELECT group_id from app_group WHERE group_name='Подростки'), CURRENT_DATE, 'М'),
+    ('Федя', 'Смирнов', '01.02.2011', (SELECT group_id from app_group WHERE group_name='Подростки'), CURRENT_DATE, 'М'),
+    ('Лена', 'Морозова', '2012.12.21', (SELECT group_id from app_group WHERE group_name='Подростки'), CURRENT_DATE, 'Ж');
+
+INSERT INTO  app_parent(child_id, name, surname)
+    VALUES
+    (1, 'Ольга', 'Петрова'),
+    (2, 'Михаил', 'Петров'),
+    (3, 'Демьян', 'Сидоров'),
+    (4, 'Герман', 'Энштейн'),
+    (5, 'Валерия', 'Смирнова'),
+    (6, 'Павел', 'Морозов');
+
+
