@@ -1,0 +1,11 @@
+digraph "django/app"
+{
+ // LATEX_PDF_SIZE
+  edge [fontname="Helvetica",fontsize="10",labelfontname="Helvetica",labelfontsize="10"];
+  node [fontname="Helvetica",fontsize="10",shape=record];
+  compound=true
+  subgraph clusterdir_21c50af3483557326bdb0a6411c95011 {
+    graph [ bgcolor="#edf0f7", pencolor="grey25", style="filled,dashed,", label="django", fontname="Helvetica", fontsize="10", URL="dir_21c50af3483557326bdb0a6411c95011.html"]
+  dir_f3e6a98a0a98a0f662497c47f02d7363 [shape=box, label="app", style="filled,bold,", fillcolor="#edf0f7", color="grey25", URL="dir_f3e6a98a0a98a0f662497c47f02d7363.html"];
+  }
+}
