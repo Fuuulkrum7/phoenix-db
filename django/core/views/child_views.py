@@ -1,10 +1,7 @@
 # core/views/child_views.py
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from app.models import (
-    Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group,
-    TrackType, Visits, MarksForVisit, VisitType, MarkCategory, MarkType
-)
+from app.models import Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group, TrackType, Visits, MarksForVisit, VisitType, MarkCategory, MarkType
 
 @login_required
 def child(request, child_id):

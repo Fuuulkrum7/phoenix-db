@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Leader Page</title>
+    <title>Tutor Page</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         @media (max-width: 768px) {
@@ -43,21 +43,21 @@
                         {% for person in leaders %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ person.full_name }}</td>
+                                <td>{{ person.worker.name }} {{ person.worker.surname }}</td>
                                 <td>Leader</td>
                             </tr>
                         {% endfor %}
                         {% for person in curators %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ person.full_name }}</td>
+                                <td>{{ person.worker.name }} {{ person.worker.surname }}</td>
                                 <td>Curator</td>
                             </tr>
                         {% endfor %}
                         {% for person in volunteers %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ person.full_name }}</td>
+                                <td>{{ person.worker.name }} {{ person.worker.surname }}</td>
                                 <td>Volunteer</td>
                             </tr>
                         {% endfor %}
@@ -76,7 +76,7 @@
                         {% for child in children %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td><a href="{% url 'child_detail' child.id %}">{{ child.full_name }}</a></td>
+                                <td><a href="{% url 'child' child.id %}">{{ child.name }} {{ child.surname }}</a></td>
                             </tr>
                         {% endfor %}
                     </tbody>
