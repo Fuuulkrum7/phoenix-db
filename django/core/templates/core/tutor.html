@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Leader Page</title>
+    <title>Tutor Page</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         @media (max-width: 768px) {
@@ -23,79 +23,87 @@
                         <label for="group">Select Group:</label>
                         <select class="form-control" id="group" name="group" onchange="this.form.submit()">
                             {% for group in groups %}
-                                <option value="{{ group.id }}" {% if group.id == selected_group.id %}selected{% endif %}>{{ group.name }}</option>
+                                <option value="{{ group.group_id }}" {% if group.group_id == selected_group.group_id %}selected{% endif %}>{{ group.group_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
                 </form>
             </div>
             <div class="col-md-9">
-                <h2>Group Members</h2>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Index</th>
-                            <th>Full Name</th>
-                            <th>Role</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for person in leaders %}
+                {% if selected_group %}
+                    <h2>Group Members</h2>
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ person.full_name }}</td>
+                                <th>Index</th>
+                                <th>Full Name</th>
+                                <th>Role</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>{{ leader.name }} {{ leader.surname }}</td>
                                 <td>Leader</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
 
-                <h2>Children in Group</h2>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Index</th>
-                            <th>Full Name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for child in children %}
+                            </tr>
                             <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td><a href="{% url 'child_detail' child.id %}">{{ child.full_name }}</a></td>
+                                <td>2</td>
+                                <td>{{ curator.worker.name }} {{ curator.worker.surname }}</td>
+                                <td>Curator</td>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
 
-                <h2>Courses</h2>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Index</th>
-                            <th>Course Name</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for course in courses %}
+                    <h2>Children in Group</h2>
+                    <table class="table">
+                        <thead>
                             <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ course.name }}</td>
+                                <th>Index</th>
+                                <th>Full Name</th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {% for child in children %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td><a href="{% url 'tutor:child' child.child_id %}">{{ child.name }} {{ child.surname }}</a></td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
 
-                <div class="statistics">
-                    <h2>Statistics</h2>
-                    <!-- Вставьте график здесь -->
-                </div>
+                    <h2>Courses</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Index</th>
+                                <th>Course Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ course.course_name }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
 
-                <div class="actions">
-                    <a href="{% url 'edit_attendance' %}" class="btn btn-primary">Mark Attendance</a>
-                    <a href="{% url 'edit_behavour' %}" class="btn btn-secondary">Evaluate Lesson</a>
-                    <a href="{% url 'schedule' %}" class="btn btn-info">Schedule</a>
-                </div>
+                    <div class="statistics">
+                        <h2>Statistics</h2>
+                        <!-- Вставьте график здесь -->
+                    </div>
+                    <div class="actions">
+                        <a href="{% url 'edit_attendance' %}" class="btn btn-primary">Mark Attendance</a>
+                        <a href="{% url 'edit_behavour' %}" class="btn btn-secondary">Evaluate Lesson</a>
+                        <a href="{% url 'schedule' %}" class="btn btn-info">Schedule</a>
+                    </div>
+                {% else %}
+                    <p>Please select a group to see the details.</p>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -1,23 +1,27 @@
 # app/views.py
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import render, redirect
-from .models import LoginData, WorkerByRole, Role
-from django.http import HttpResponse
+## @package app
+#  Contains the primary view functions for the application's user interface.
+#
 
-# app/views.py
+## @file views
+#  Manages the presentation and authentication logic for the application, including custom user login and index views.
+#
+
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import render, redirect
+from .models import LoginData, WorkerByRole
 from django.contrib.auth.decorators import login_required
 from app.models import LoginData, WorkerByRole
+from django.http import HttpResponse
 
-# app/views.py
-from django.contrib.auth import login, authenticate
-from django.contrib.auth.forms import AuthenticationForm
-from django.shortcuts import render, redirect
-from app.models import LoginData, WorkerByRole
-
+## Custom login view that handles user authentication and role-based redirection.
+#  @param request The HTTP request object.
+#  Authenticates the user, determines their role, and redirects to the appropriate page based on their role.
+#  If the user is already authenticated, it immediately redirects based on the role saved in the session.
+#  If the login fails or user data is not found, it redirects to the login page.
+#  Supports roles like Admin ('A'), Tutor ('T'), Curator ('C'), and Methodist ('M').
+#
 def custom_login(request):
     if request.user.is_authenticated:
         try:
@@ -50,22 +54,28 @@ def custom_login(request):
             user = authenticate(username=username, password=password)
             if user is not None:
                 login(request, user)
-                request.session['username'] = username
+
+                # Определение роли пользователя
                 try:
                     login_data = LoginData.objects.get(worker_login=username)
                     worker = login_data.worker.worker
-                    worker_role = WorkerByRole.objects.get(worker=worker)
-                    role = worker_role.level_code.level_code
-                    request.session['user_id'] = worker.worker_id
-                    request.session['user_role'] = role
+                    worker_roles = WorkerByRole.objects.filter(worker=worker)
+                    roles = [role.level_code.level_code for role in worker_roles]
 
-                    if role == 'A':
+                    # Сохраняем данные в сессии
+                    request.session['username'] = username
+                    request.session['user_id'] = worker.worker_id
+                    request.session['user_roles'] = roles
+
+
+                    # Перенаправление в зависимости от ролей
+                    if 'A' in roles:
                         return redirect('/admin/')
-                    elif role == 'T':
+                    elif 'T' in roles:
                         return redirect('/tutor/')
-                    elif role == 'C':
+                    elif 'C' in roles:
                         return redirect('/curator/')
-                    elif role == 'M':
+                    elif 'M' in roles:
                         return redirect('/methodist/')
                     else:
                         return redirect('/')
@@ -77,5 +87,9 @@ def custom_login(request):
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
 
+## Basic index view that returns a simple greeting message.
+#  @param request The HTTP request object.
+#  This view serves as the entry point for the application, greeting with a simple message.
+#
 def index(request):
     return HttpResponse("Hello, world! This is the index page.")

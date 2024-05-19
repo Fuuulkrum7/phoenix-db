@@ -1,21 +1,17 @@
-# views.py
-
+# core/views/tutor_views.py
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from .models import Worker, WorkerByRole, Group, GroupClass, Child, Course
+from app.models import Worker, WorkerByRole, Group, GroupClass, Child, Course
 
+## Displays the interface to edit attendance records.
+#  @param request The HTTP request object.
+#  Only accessible to logged-in users.
+#
 @login_required
 def tutor_view(request):
     # Получаем текущего пользователя и его рабочую запись
-    current_worker = get_object_or_404(Worker, user=request.user)
-    
-    # Проверяем, что пользователь является tutor
-    tutor_roles = WorkerByRole.objects.filter(worker=current_worker, level_code__in=['T', 'C', 'V'])
-    
-    if not tutor_roles.exists():
-        # Если у пользователя нет нужной роли, то перенаправляем или возвращаем ошибку
-        return render(request, 'core/not_authorized.html')
+    current_worker = get_object_or_404(Worker, worker_id=request.session['user_id'])
     
     # Получаем группы, которыми руководит текущий пользователь
     groups = Group.objects.filter(groupclass__teacher=current_worker).distinct()
@@ -23,17 +19,16 @@ def tutor_view(request):
     # Получаем выбранную группу из параметров запроса
     selected_group_id = request.GET.get('group')
     selected_group = None
-    leaders, curators, volunteers = [], [], []
+    leader, curator = None, None
     children, courses = [], []
 
     if selected_group_id:
-        selected_group = get_object_or_404(Group, id=selected_group_id)
+        selected_group = get_object_or_404(Group, group_id=selected_group_id)
         
-        # Получаем всех tutor выбранной группы
-        group_classes = GroupClass.objects.filter(group=selected_group)
-        leaders = group_classes.filter(teacher__workerbyrole__level_code='L')
-        curators = group_classes.filter(teacher__workerbyrole__level_code='C')
-        volunteers = group_classes.filter(teacher__workerbyrole__level_code='V')
+        # Получаем лидера и куратора выбранной группы
+        group_class = get_object_or_404(GroupClass, group=selected_group, teacher=current_worker)
+        leader = group_class.teacher
+        curator = WorkerByRole.objects.filter(worker=leader, level_code='C').first()
         
         # Получаем всех детей в выбранной группе
         children = Child.objects.filter(current_group=selected_group)
@@ -44,9 +39,8 @@ def tutor_view(request):
     context = {
         'groups': groups,
         'selected_group': selected_group,
-        'leaders': leaders,
-        'curators': curators,
-        'volunteers': volunteers,
+        'leader': leader,
+        'curator': curator,
         'children': children,
         'courses': courses
     }
