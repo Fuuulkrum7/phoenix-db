@@ -36,8 +36,8 @@ class Child(models.Model):
     surname = models.CharField(max_length=64, null=False)
     patronymic = models.CharField(max_length=64, blank=True, null=True)
     birthday = models.DateField(null=False)
-    current_group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    add_to_group_date = models.DateField(auto_now_add=True)
+    current_group = models.ForeignKey(Group, on_delete=models.CASCADE, null=True)
+    add_to_group_date = models.DateField(auto_now_add=True, null=True)
     gender = models.CharField(max_length=1, null=False)
 
     class Meta:
