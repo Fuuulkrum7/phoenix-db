@@ -1,8 +1,8 @@
-INSERT INTO mark_categories(mark_category, description) VALUES 
+INSERT INTO app_markcategory(mark_category, description) VALUES 
     ('Социальные навыки', 'Навыки, описывающие способность ребенка к корректному социальному взаимодейтсвию'),
     ('Трудное поведение', 'Параметры, отражащии девиации в поведении ребенка');
 
-INSERT INTO mark_types(description, min_value, max_value, mark_category) VALUES
+INSERT INTO app_marktype(description, min_value, max_value, mark_category_id) VALUES
     ('Конструктивно воспринимает неуспех (спокойно реагирует на возникающие проблемы)', 0, 3, 'Социальные навыки'),
     ('Понимает свои границы во время взаимодействия с другими', 0, 3, 'Социальные навыки'),
     ('Понимает чужие границы', 0, 3, 'Социальные навыки'),
@@ -17,7 +17,7 @@ INSERT INTO mark_types(description, min_value, max_value, mark_category) VALUES
     ('Обзывает, оскорбляет участников группы или ведущих, ругается матом, грубо выражается', 0, 3, 'Трудное поведение'),
     ('Отказывается присоединиться к деятельности и заявляет об этом вслух', 0, 3, 'Трудное поведение');
 
-INSERT INTO roles(role_name, eng_role_name, level_code) VALUES 
+INSERT INTO app_role(role_name, eng_role_name, level_code) VALUES 
     ('Куратор', 'Curator', 'C'),
     ('Ведущий', 'Tutor', 'T'),
     ('Методист', 'Methodist', 'M'),
@@ -41,7 +41,7 @@ INSERT INTO app_child(name, surname, birthday, current_group_id, add_to_group_da
     ('Федя', 'Смирнов', '01.02.2011', (SELECT group_id from app_group WHERE group_name='Подростки'), CURRENT_DATE, 'М'),
     ('Лена', 'Морозова', '2012.12.21', (SELECT group_id from app_group WHERE group_name='Подростки'), CURRENT_DATE, 'Ж');
 
-INSERT INTO  app_parent(child_id, name, surname)
+INSERT INTO app_parent(child_id, name, surname)
     VALUES
     (1, 'Ольга', 'Петрова'),
     (2, 'Михаил', 'Петров'),
@@ -49,5 +49,72 @@ INSERT INTO  app_parent(child_id, name, surname)
     (4, 'Герман', 'Энштейн'),
     (5, 'Валерия', 'Смирнова'),
     (6, 'Павел', 'Морозов');
+
+INSERT INTO app_parentphone(parent_id, phone_number) 
+    VALUES
+    (1, '+79845862115'),
+    (1, '+75681459578'),
+    (2, '+71245891536'),
+    (3, '+78432578953'),
+    (4, '+78542698289'),
+    (4, '+77922277881'),
+    (4, '+78963212998'),
+    (5, '+79887433012'),
+    (5, '+78300945627'),
+    (6, '+70012795148');
+
+INSERT INTO app_worker(name, surname, patronymic, hire_date)
+    VALUES
+    ('Ольга', 'Сидорова', 'Константиновна', CURRENT_DATE),
+    ('Нина', 'Разумихина', 'Андреевна', CURRENT_DATE),
+    ('Родион', 'Раскольников', 'Романович', CURRENT_DATE),
+    ('Борис', 'Федоров', '', CURRENT_DATE);
+
+INSERT INTO app_workerbyrole(level_code_id, worker_id, tensure_start_date)
+    VALUES
+    ('T', 1, CURRENT_DATE),
+    ('M', 1, CURRENT_DATE),
+    ('T', 2, CURRENT_DATE),
+    ('T', 4, CURRENT_DATE),
+    ('M', 2, CURRENT_DATE),
+    ('C', 3, CURRENT_DATE);
+
+INSERT INTO app_groupcreator(group_id, curator_id)
+    SELECT group_id, 3 as curator FROM group_table;
+
+INSERT INTO app_course(course_name) 
+    VALUES
+    ('Математика'),
+    ('Информатика'),
+    ('Грамматика'),
+    ('Сеанс психотерапии');
+
+INSERT INTO app_coursebymarktype(course_id, mark_type_id) 
+	SELECT a.course_id, b.mark_type_id FROM app_course a, app_marktype b;
+
+INSERT INTO app_courseauthor(course_id, author_id) 
+	SELECT a.course_id, b.worker_id FROM app_course a, app_workerbyrole b
+    WHERE b.level_code_id = 'M';
+
+INSERT INTO app_groupclass(group_id, teacher_id, course_id, creation_date)
+    SELECT g.group_id, w.worker_id, c.course_id, CURRENT_DATE AS cur
+    FROM app_group g, app_workerbyrole w, app_course c 
+    WHERE w.level_code_id = 'T';
+
+INSERT INTO app_coursecomment(course_id, author_id, description)
+    SELECT course_id, 3, 'Все отлично, вы молодцы' FROM app_course; 
+
+INSERT INTO app_classinfo(class_instance_id, author_id, description)
+    SELECT c.class_id, w.worker_id, 'Все отлично, вы молодцы' FROM app_groupclass c, app_workerbyrole w
+    WHERE w.level_code_id = 'T'; 
+
+INSERT INTO app_childinfo(child_id, author_id, description)
+    SELECT c.child_id, w.worker_id, 'Прекрасный ребенок' AS a FROM app_child c, app_worker w; 
+
+INSERT INTO app_semester(start_date, end_date)
+    VALUES
+    ('2023.06.30', '2023.12.31'),
+    ('2024.01.01', '2024.03.30'),
+    ('2024.03.31', CURRENT_DATE);
 
 
