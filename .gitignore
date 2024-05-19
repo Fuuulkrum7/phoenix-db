@@ -1,6 +1,10 @@
 .vscode
 .code-search
 django/.env
+.idea/
+__pycache__/
+venv/
+.venv
 .env
-.vscode
-.code-search
+
+
