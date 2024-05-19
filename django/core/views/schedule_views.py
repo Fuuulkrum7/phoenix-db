@@ -2,7 +2,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.utils.dateparse import parse_date
-from app.models import Lesson
+from app.models import Lesson, GroupClass, Course
 
 @login_required
 def schedule(request):
@@ -10,16 +10,19 @@ def schedule(request):
     end_date = request.GET.get('end_date')
     lessons = Lesson.objects.all()
 
+
     if start_date and end_date:
         start_date = parse_date(start_date)
         end_date = parse_date(end_date)
         lessons = lessons.filter(lesson_date__range=(start_date, end_date))
-
+    print("Lessons:")
+    for lesson in lessons:
+        print(f"Date: {lesson.lesson_date}, Course: {lesson.class_instance.course.course_name}, Group: {lesson.class_instance.group.group_name}")
     context = {
         'lessons': lessons,
         'start_date': start_date,
         'end_date': end_date,
-        'can_add_lesson': request.session['user_roles'][0]
+        #'can_add_lesson': request.session['user_role'][0]
     }
 
     return render(request, 'core/schedule.html', context)
