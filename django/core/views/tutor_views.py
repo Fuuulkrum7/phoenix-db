@@ -1,45 +1,32 @@
 # core/views/tutor_views.py
-
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-from app.models import Worker, WorkerByRole, Group, GroupClass, Child, Course
+from app.models import Worker, Group, Child, Course, WorkerByRole
 
 @login_required
-def tutor_view(request):
-    # Получаем текущего пользователя и его рабочую запись
-    current_worker = get_object_or_404(Worker, worker_id=request.session['user_id'])
-    
-    # Получаем группы, которыми руководит текущий пользователь
-    groups = Group.objects.filter(groupclass__teacher=current_worker).distinct()
-    
-    # Получаем выбранную группу из параметров запроса
-    selected_group_id = request.GET.get('group')
-    selected_group = None
-    leader, curator = None, None
-    children, courses = [], []
+def tutor(request):
+    user_id = request.session.get('user_id')
 
-    if selected_group_id:
-        selected_group = get_object_or_404(Group, group_id=selected_group_id)
-        
-        # Получаем лидера и куратора выбранной группы
-        group_class = get_object_or_404(GroupClass, group=selected_group, teacher=current_worker)
-        leader = group_class.teacher
-        curator = WorkerByRole.objects.filter(worker=leader, level_code='C').first()
-        
-        # Получаем всех детей в выбранной группе
+    groups = Group.objects.all()
+
+    selected_group_id = request.GET.get('group', groups.first().group_id if groups else None)
+    selected_group = get_object_or_404(Group, group_id=selected_group_id) if selected_group_id else None
+
+    if selected_group:
+        tutors = WorkerByRole.objects.filter(worker__groupcreators__group=selected_group, level_code='T')
+        curators = WorkerByRole.objects.filter(worker__groupcreators__group=selected_group, level_code='C')
         children = Child.objects.filter(current_group=selected_group)
-        
-        # Получаем все курсы, которые проходит выбранная группа
         courses = Course.objects.filter(groupclass__group=selected_group).distinct()
+    else:
+        tutors = curators = children = courses = None
 
     context = {
         'groups': groups,
         'selected_group': selected_group,
-        'leader': leader,
-        'curator': curator,
+        'tutors': tutors,
+        'curators': curators,
         'children': children,
-        'courses': courses
+        'courses': courses,
     }
 
     return render(request, 'core/tutor.html', context)
