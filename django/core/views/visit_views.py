@@ -33,7 +33,7 @@ def add_visit(request, class_id):
             visit.clean()
             visit.save()
 
-        return redirect('/tutor/')
+        return redirect('../../')
 
     return render(request, 'core/add_visit.html', {
         'child_form_list': child_form_list,
