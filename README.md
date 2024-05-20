@@ -70,11 +70,21 @@ restart.bat
 Install doxygen
 
 linux
-sudo apt install doxygen
-
+sudo 
+```
+apt install doxygen
+```
 mac
+```
 brew install doxygen
-
+```
 windows
 https://www.doxygen.nl/download.html
+
+Now run doxygen:
+
+```
+cd <work-dir>
+doxygen doxyfile
+```
 
