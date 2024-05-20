@@ -6,35 +6,39 @@
 </head>
 <body>
     <h1>Tutor Page</h1>
+    <form action='add-visit/' method='GET'>
+        <label for="course-select">Выбор предмета:</label>
+        <select class="course-select" name="course-select">
+            {% for course in selected_course %}
+                <option value="{{ course.course_id }}" >{{ course.course_name }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="group-select">Select a group:</label>
+        <select class="group-select" name="group-select" style="min-width: 100px">
+            {% for group in selected_groups %}
+                <option value="{{ group.group_id }}" >{{ group.group__group_name }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Перейти к выставлению посещаемости</button>
+    </form>
     
-    <label for="course-select">Select a course:</label>
-    <select id="course-select">
-        <option value="">Select a course</option>
-        {% for course in courses %}
-            <option value="{{ course.course_id }}" {% if selected_course and course.course_id == selected_course.course_id %}selected{% endif %}>{{ course.course_name }}</option>
-        {% endfor %}
-    </select>
-
-    <label for="group-select">Select a group:</label>
-    <select id="group-select">
-        {% for group in selected_groups %}
-            <option value="{{ group.group_id }}">{{ group.group__group_name }}</option>
-        {% endfor %}
-    </select>
-
     <script>
         $(document).ready(function(){
-            $('#course-select').change(function(){
+            $('.course-select').change(function(){
                 var courseId = $(this).val();
-                if(courseId){
+                if(courseId) {
+                    $('.group-select').empty();
                     $.ajax({
-                        url: '/get-groups/' + courseId + '/',
+                        url: 'get-groups/' + courseId + '/',
                         success: function(data){
-                            var groupSelect = $('#group-select');
-                            groupSelect.empty();
-                            data.forEach(function(group){
-                                groupSelect.append(new Option(group.group__group_name, group.group_id));
-                            });
+                            var toAppend = '';
+                            for (var i = 0; i < data.length; i++){
+                                toAppend += '<option value="' + data[i].group_id + '">' + data[i].group__group_name + '</option>';
+                                console.log(toAppend);
+                            }
+
+                            $('.group-select').append(toAppend);
                         }
                     });
                 }
