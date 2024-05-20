@@ -28,10 +28,17 @@ CREATE TABLE IF NOT EXISTS child(
 -- parent of child
 CREATE TABLE IF NOT EXISTS parent(
     parent_id SERIAL PRIMARY KEY,
-    child_id INT NOT NULL REFERENCES child(child_id),
     name VARCHAR(64) NOT NULL,
     surname VARCHAR(64) NOT NULL,
-    patronymic VARCHAR(64)
+    patronymic VARCHAR(64),
+    role VARCHAR(64) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS parent_by_child(
+    parent_id INT REFERENCES parent(parent_id),
+    child_id INT REFERENCES child(child_id),
+
+    CONSTRAINT primary_parent_by_child PRIMARY KEY (parent_id, child_id);
 );
 
 CREATE TABLE IF NOT EXISTS parent_phones(

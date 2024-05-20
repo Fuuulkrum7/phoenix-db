@@ -115,8 +115,8 @@ INSERT INTO app_semester(start_date, end_date)
     VALUES
     ('2023.06.30', '2023.12.31'),
     ('2024.01.01', '2024.03.30'),
-    (CURRENT_DATE, '2024.06.30'),
-    ('2024.03.31', CURRENT_DATE);
+    ('2024.03.31', CURRENT_DATE),
+    (CURRENT_DATE, '2024.06.30');
 
 INSERT INTO app_logindata VALUES
   ('hello', 'hash', 1);

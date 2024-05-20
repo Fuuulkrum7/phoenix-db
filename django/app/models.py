@@ -54,6 +54,15 @@ class Parent(models.Model):
     surname = models.CharField(max_length=64, null=False)
     patronymic = models.CharField(max_length=64, blank=True, null=True)
 
+class ParentByChild(models.Model):
+    parent_id = models.ForeignKey(Parent, on_delete=models.CASCADE)
+    child_id = models.ForeignKey(Child, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['parent_id', 'child_id'], name='primary_parent_by_child')
+        ]
+
 ## \class ParentPhone
 ## \brief Represents the phone number of a parent.
 class ParentPhone(models.Model):

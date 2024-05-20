@@ -1,20 +1,28 @@
 # core/views/schedule_views.py
-## @package core
-#  Contains the view functions for scheduling within the application.
-#
-
-## @file schedule_views
-#  Manages the presentation logic related to scheduling functionalities.
-#
-
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
+from django.utils.dateparse import parse_date
+from app.models import Lesson, GroupClass, Course
 
-## Displays the scheduling interface.
-#  @param request The HTTP request object.
-#  This view renders the schedule management page, providing tools to manage and view various scheduling tasks.
-#  Access to this view is restricted to logged-in users, ensuring that only authenticated individuals can interact with scheduling features.
-#
 @login_required
 def schedule(request):
-    return render(request, 'core/schedule.html')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    lessons = Lesson.objects.all()
+
+
+    if start_date and end_date:
+        start_date = parse_date(start_date)
+        end_date = parse_date(end_date)
+        lessons = lessons.filter(lesson_date__range=(start_date, end_date))
+    print("Lessons:")
+    for lesson in lessons:
+        print(f"Date: {lesson.lesson_date}, Course: {lesson.class_instance.course.course_name}, Group: {lesson.class_instance.group.group_name}")
+    context = {
+        'lessons': lessons,
+        'start_date': start_date,
+        'end_date': end_date,
+        #'can_add_lesson': request.session['user_role'][0]
+    }
+
+    return render(request, 'core/schedule.html', context)
