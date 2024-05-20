@@ -95,8 +95,9 @@
             </div>
             <div class="card-body">
                 <ul>
-                    {% for parent in parents %}
-                        <li>{{ parent.name }} {{ parent.surname }} - Phones: 
+                    {% for parent, parent_phones in parents %}
+                        <li>{{ parent.name }} {{ parent.surname }}, приходится: {{ parent.role }}; <br>
+                            &#10; Номера телефонов: 
                             {% for phone in parent_phones %}
                                 {{ phone.phone_number }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}

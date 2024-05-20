@@ -17,7 +17,6 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'phoenixdb.settings')
 django.setup()
 
 # Retrieve superuser credentials from environment variables.
-=======
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'phoenixdb.settings')
 
 django.setup()

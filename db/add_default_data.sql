@@ -41,14 +41,17 @@ INSERT INTO app_child(name, surname, birthday, current_group_id, add_to_group_da
     ('Федя', 'Смирнов', '01.02.2011', (SELECT group_id from app_group WHERE group_name='Подростки'), CURRENT_DATE, 'М'),
     ('Лена', 'Морозова', '2012.12.21', (SELECT group_id from app_group WHERE group_name='Подростки'), CURRENT_DATE, 'Ж');
 
-INSERT INTO app_parent(child_id, name, surname)
+INSERT INTO app_parent(name, surname, role)
     VALUES
-    (1, 'Ольга', 'Петрова'),
-    (2, 'Михаил', 'Петров'),
-    (3, 'Демьян', 'Сидоров'),
-    (4, 'Герман', 'Энштейн'),
-    (5, 'Валерия', 'Смирнова'),
-    (6, 'Павел', 'Морозов');
+    ('Ольга', 'Петрова', 'Мама'),
+    ('Михаил', 'Петров', 'Папа'),
+    ('Демьян', 'Сидоров', 'Брат'),
+    ('Герман', 'Энштейн', 'Дед'),
+    ('Валерия', 'Смирнова', 'Бабушка'),
+    ('Павел', 'Морозов', 'Лучший друг');
+
+INSERT INTO app_parentbychild(child_id, parent_id) 
+	SELECT a.child_id, b.parent_id FROM app_child a, app_parent b;
 
 INSERT INTO app_parentphone(parent_id, phone_number) 
     VALUES
@@ -119,7 +122,7 @@ INSERT INTO app_semester(start_date, end_date)
     (CURRENT_DATE, '2024.06.30');
 
 INSERT INTO app_logindata VALUES
-  ('hello', 'hash', 1);
+  ('hello', 1);
 
 INSERT INTO app_lesson (class_instance_id, lesson_date, duration, semester_id) VALUES 
     (1, '2024-05-20 09:00:00', 40, 4),

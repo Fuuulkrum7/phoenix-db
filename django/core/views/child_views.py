@@ -14,7 +14,7 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from app.models import (
     Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group, Course,
-    TrackType, Visits, MarksForVisit, MarkCategory, MarkType
+    TrackType, Visits, MarksForVisit, MarkCategory, MarkType, ParentByChild
 )
 
 ## Displays detailed information about a specific child.
@@ -31,8 +31,13 @@ def child(request, child_id):
     # Collect related information from other tables by child object.
     child_data = Child.objects.get(child_id=child_id)
     child_info = ChildInfo.objects.filter(child=child_data)
-    parents = Parent.objects.filter(child=child_data)
-    parent_phones = ParentPhone.objects.filter(parent__in=parents)
+    # get all parents
+    parents_ids = ParentByChild.objects.values_list('parent', flat=True).filter(child=child_id)
+    parents = Parent.objects.filter(parent_id__in=parents_ids)
+    parents_info = [
+        (parent, ParentPhone.objects.filter(parent=parent.parent_id)) for parent in parents
+    ]
+    
     group_history = ClassHistory.objects.filter(child=child_data)
     upcoming_lessons = Visits.objects.filter(child=child_data).select_related('group_class')
     marks = MarksForVisit.objects.filter(visit__child=child_data).select_related('mark_type', 'visit')
@@ -66,8 +71,7 @@ def child(request, child_id):
     context = {
         'child': child_data,
         'child_info': child_info,
-        'parents': parents,
-        'parent_phones': parent_phones,
+        'parents': parents_info,
         'group_history': group_history,
         'upcoming_lessons': upcoming_lessons,
         'marks': marks,
