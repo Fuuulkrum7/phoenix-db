@@ -79,8 +79,8 @@ INSERT INTO app_workerbyrole(level_code_id, worker_id, tensure_start_date)
     ('M', 2, CURRENT_DATE),
     ('C', 3, CURRENT_DATE);
 
-INSERT INTO app_groupcreator(group_id, curator_id)
-    SELECT group_id, 3 as curator FROM group_table;
+INSERT INTO app_groupcreators(group_id, curator_id)
+    SELECT group_id, 3 as curator FROM app_group;
 
 INSERT INTO app_course(course_name) 
     VALUES
@@ -115,6 +115,29 @@ INSERT INTO app_semester(start_date, end_date)
     VALUES
     ('2023.06.30', '2023.12.31'),
     ('2024.01.01', '2024.03.30'),
-    ('2024.03.31', CURRENT_DATE);
+    ('2024.03.31', CURRENT_DATE),
+    (CURRENT_DATE, '2024.06.30');
 
+INSERT INTO app_logindata VALUES
+  ('hello', 'hash', 1);
+
+INSERT INTO app_lesson (class_instance_id, lesson_date, duration, semester_id) VALUES 
+    (1, '2024-05-20 09:00:00', 40, 4),
+    (1, '2024-05-20 10:00:00', 40, 4),
+
+    -- Tuesday
+    (1, '2024-05-21 11:00:00', 40, 4),
+    (1, '2024-05-21 12:00:00', 40, 4),
+
+    -- Wednesday
+    (1, '2024-05-22 13:00:00', 40, 4),
+    (1, '2024-05-22 14:00:00', 40, 4),
+
+    -- Thursday
+    (1, '2024-05-23 15:00:00', 40, 4),
+    (1, '2024-05-23 16:00:00', 40, 4),
+
+    -- Friday
+    (1, '2024-05-24 17:00:00', 40, 4),
+    (1, '2024-05-24 18:00:00', 40, 4);
 

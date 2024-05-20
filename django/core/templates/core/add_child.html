@@ -1,0 +1,15 @@
+<!-- templates/core/add_child.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Child</title>
+</head>
+<body>
+    <h1>Add Child</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add Child</button>
+    </form>
+</body>
+</html>

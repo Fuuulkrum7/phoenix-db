@@ -8,29 +8,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 
 def custom_login(request):
-    if request.user.is_authenticated:
-        try:
-            login_data = LoginData.objects.get(worker_login=request.user.username)
-            worker = login_data.worker.worker
-            worker_role = WorkerByRole.objects.get(worker=worker)
-            role = worker_role.level_code.level_code
-            request.session['user_id'] = worker.worker_id
-            request.session['user_role'] = role
-            if role == 'A':
-                return redirect('/admin/')
-            elif role == 'T':
-                return redirect('/tutor/')
-            elif role == 'C':
-                return redirect('/curator/')
-            elif role == 'M':
-                return redirect('/methodist/')
-            else:
-                return redirect('/')
-        except LoginData.DoesNotExist:
-            return redirect('/')
-        except WorkerByRole.DoesNotExist:
-            return redirect('/')
-
     if request.method == 'POST':
         form = AuthenticationForm(request, data=request.POST)
         if form.is_valid():
@@ -43,9 +20,9 @@ def custom_login(request):
                 # Определение роли пользователя
                 try:
                     login_data = LoginData.objects.get(worker_login=username)
-                    worker = login_data.worker.worker
-                    worker_roles = WorkerByRole.objects.filter(worker=worker)
-                    roles = [role.level_code.level_code for role in worker_roles]
+                    worker = login_data.worker
+                    roles = list(WorkerByRole.objects.filter(worker=worker).values_list('level_code', flat=True))
+                    print(roles)
 
                     # Сохраняем данные в сессии
                     request.session['username'] = username

@@ -12,9 +12,17 @@ class DateRangeForm(forms.Form):
 
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from app import models
-from app.models import Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group, TrackType, Visits, MarksForVisit,  MarkCategory, MarkType, Course
+from app.models import (
+    Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group, Course,
+    TrackType, Visits, MarksForVisit, MarkCategory, MarkType
+)
 
+## Displays detailed information about a specific child.
+#  @param request The HTTP request object.
+#  @param child_id The unique identifier of the child.
+#  This view compiles extensive information about the child including basic info, parents' contacts, group history, upcoming lessons, and academic marks.
+#  This view is protected to ensure only logged-in users can access the information.
+#
 @login_required
 def child(request, child_id):
     # Fetch the main child record.

@@ -54,6 +54,15 @@ class Parent(models.Model):
     surname = models.CharField(max_length=64, null=False)
     patronymic = models.CharField(max_length=64, blank=True, null=True)
 
+class ParentByChild(models.Model):
+    parent_id = models.ForeignKey(Parent, on_delete=models.CASCADE)
+    child_id = models.ForeignKey(Child, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['parent_id', 'child_id'], name='primary_parent_by_child')
+        ]
+
 ## \class ParentPhone
 ## \brief Represents the phone number of a parent.
 class ParentPhone(models.Model):
@@ -106,7 +115,7 @@ class WorkerByRole(models.Model):
 class LoginData(models.Model):
     worker_login = models.CharField(max_length=64, primary_key=True)
     password = models.CharField(max_length=256, null=False)
-    worker = models.ForeignKey(WorkerByRole, on_delete=models.CASCADE)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
 
 ## \class WorkerHistory
 ## \brief Represents the history of a worker's roles.
@@ -282,7 +291,7 @@ class Visits(models.Model):
     child = models.ForeignKey(Child, on_delete=models.CASCADE)
     group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE)
     lesson_date = models.DateTimeField(null=False)
-    description = models.CharField(max_length=96, null=False)
+    description = models.CharField(max_length=96, null=True)
     visited = models.BooleanField(default=True)
 
     class Meta:
@@ -291,7 +300,7 @@ class Visits(models.Model):
         ]
     def clean(self):
         super().clean()
-        if not Lesson.objects.filter(group_class=self.group_class, lesson_date=self.lesson_date).exists():
+        if not Lesson.objects.filter(class_instance=self.group_class, lesson_date=self.lesson_date).exists():
             raise ValidationError('Invalid combination of class_instance and lesson_date.')
 
 @receiver(pre_save, sender=Visits)

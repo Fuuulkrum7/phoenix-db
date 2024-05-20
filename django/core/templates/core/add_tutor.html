@@ -1,0 +1,15 @@
+<!-- templates/core/add_tutor.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Tutor</title>
+</head>
+<body>
+    <h1>Add Tutor</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Add Tutor</button>
+    </form>
+</body>
+</html>

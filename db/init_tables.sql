@@ -28,10 +28,17 @@ CREATE TABLE IF NOT EXISTS child(
 -- parent of child
 CREATE TABLE IF NOT EXISTS parent(
     parent_id SERIAL PRIMARY KEY,
-    child_id INT NOT NULL REFERENCES child(child_id),
     name VARCHAR(64) NOT NULL,
     surname VARCHAR(64) NOT NULL,
-    patronymic VARCHAR(64)
+    patronymic VARCHAR(64),
+    role VARCHAR(64) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS parent_by_child(
+    parent_id INT REFERENCES parent(parent_id),
+    child_id INT REFERENCES child(child_id),
+
+    CONSTRAINT primary_parent_by_child PRIMARY KEY (parent_id, child_id);
 );
 
 CREATE TABLE IF NOT EXISTS parent_phones(
@@ -69,8 +76,7 @@ CREATE TABLE IF NOT EXISTS worker_by_role(
 CREATE TABLE IF NOT EXISTS login_data(
     worker_login VARCHAR(64) PRIMARY KEY,
     password CHAR(256) NOT NULL,
-    worker_id INT NOT NULL,
-    level_code CHAR(1) NOT NULL,
+    worker_id INT NOT NULL
 
     CONSTRAINT worker_to_login FOREIGN KEY(worker_id, level_code) REFERENCES worker_by_role(worker_id, level_code)
 );
@@ -208,7 +214,7 @@ CREATE TABLE IF NOT EXISTS visits(
     child_id INT NOT NULL REFERENCES child(child_id),
     class_id INT NOT NULL,
     lesson_date TIMESTAMP NOT NULL,
-    description VARCHAR(96) NOT NULL,
+    description VARCHAR(96),
     visited BOOLEAN NOT NULL DEFAULT true;
 	
 	CONSTRAINT fk_lessons_from_visits FOREIGN KEY (class_id, lesson_date) REFERENCES lesson(class_id, lesson_date),
