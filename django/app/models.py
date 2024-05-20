@@ -17,7 +17,8 @@ class TrackType(models.Model):
         constraints = [
             models.CheckConstraint(check=models.Q(start_age__gt=0), name='check_start_age_gt_0'),
             models.CheckConstraint(check=models.Q(end_age__gte=models.F('start_age')), name='check_end_age_gte_start_age'),
-            models.CheckConstraint(check=models.Q(max_lessons_number__gt=0), name='check_max_lessons_number_gt_0')
+            models.CheckConstraint(check=models.Q(max_lessons_number__gt=0), name='check_max_lessons_number_gt_0'),
+            models.UniqueConstraint(fields=['start_age', 'end_age'], name='unique_age')
         ]
 
 ## \class Group
@@ -49,18 +50,18 @@ class Child(models.Model):
 ## \brief Represents a parent of a child.
 class Parent(models.Model):
     parent_id = models.AutoField(primary_key=True)
-    child = models.ForeignKey(Child, on_delete=models.CASCADE)
     name = models.CharField(max_length=64, null=False)
     surname = models.CharField(max_length=64, null=False)
     patronymic = models.CharField(max_length=64, blank=True, null=True)
+    role = models.CharField(max_length=64, null=True)
 
 class ParentByChild(models.Model):
-    parent_id = models.ForeignKey(Parent, on_delete=models.CASCADE)
-    child_id = models.ForeignKey(Child, on_delete=models.CASCADE)
+    parent = models.ForeignKey(Parent, on_delete=models.CASCADE)
+    child = models.ForeignKey(Child, on_delete=models.CASCADE)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['parent_id', 'child_id'], name='primary_parent_by_child')
+            models.UniqueConstraint(fields=['parent', 'child_id'], name='primary_parent_by_child')
         ]
 
 ## \class ParentPhone
@@ -114,7 +115,6 @@ class WorkerByRole(models.Model):
 ## \brief Represents login data for a worker.
 class LoginData(models.Model):
     worker_login = models.CharField(max_length=64, primary_key=True)
-    password = models.CharField(max_length=256, null=False)
     worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
 
 ## \class WorkerHistory

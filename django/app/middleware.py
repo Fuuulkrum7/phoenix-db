@@ -14,14 +14,15 @@ class RoleBasedAccessMiddleware:
         }
 
     def __call__(self, request):
-        user_role = request.session['user_roles'][0]
+        if request.session is not None:
+            user_role = request.session.setdefault('user_roles', [])
+            
+            if user_role:
+                current_url = request.path
+                forbidden_urls_for_role = self.forbidden_urls.get(user_role[0], [])
 
-        if user_role:
-            current_url = request.path
-            forbidden_urls_for_role = self.forbidden_urls.get(user_role, [])
-
-            # if any(current_url.startswith(url) for url in forbidden_urls_for_role):
-            #     return redirect('forbidden')
+                # if any(current_url.startswith(url) for url in forbidden_urls_for_role):
+                #     return redirect('forbidden')
 
         response = self.get_response(request)
         return response

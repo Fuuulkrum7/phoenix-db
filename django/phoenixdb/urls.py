@@ -10,7 +10,6 @@ from django.contrib import admin
 from django.urls import include, path
 from app.views import custom_login
 from django.contrib.auth import views as auth_views
-from core.views.visit_views import add_visit
 from django.shortcuts import redirect
 # from app.views import forbidden
 
@@ -29,5 +28,4 @@ urlpatterns = [
     path('child/', include('core.urls.child')),  # Includes all URL patterns for child module.
     path('statistics/', include('core.urls.statistics')),  # Includes all URL patterns for statistics module.
     path('', lambda request: redirect('login')),  # Redirects root requests to login page.
-    path('add-visit/<int:class_id>/', add_visit, name='add_visit')
 ]
