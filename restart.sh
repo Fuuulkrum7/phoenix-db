@@ -5,9 +5,5 @@ if [ "$(id -u)" -ne 0 ]; then
   exit 1
 fi
 
-USER=${SUDO_USER:-$(whoami)}
-
-sudo -u $USER <<EOF
 sudo docker-compose down
 sudo docker-compose up --build -d
-EOF

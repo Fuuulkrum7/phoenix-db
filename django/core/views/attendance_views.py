@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from app.models import Course, GroupClass, Visits, Lesson
@@ -10,8 +10,9 @@ from django.contrib import messages
 @login_required
 def attendance_view(request):
     user_id = request.session.get('user_id')
+    user_role = request.session.get('user_role')
 
-    if not user_id:
+    if not user_id or not (user_role in ['T', 'C']):
         # Handle case where user_id is not in session
         return redirect('login/') 
     
@@ -22,10 +23,15 @@ def attendance_view(request):
         selected_groups = GroupClass.objects.filter(course=courses.first()).values('group_id', 'group__group_name').distinct()
     else:
         selected_groups = []
+    
+    page_name = 'tutor'
+    if user_role == 'C':
+        page_name = 'curator'
 
     context = {
         'selected_course': selected_course,
         'selected_groups': selected_groups,
+        'user_homepage' : page_name,
     }
 
     return render(request, 'core/edit_attendance.html', context)

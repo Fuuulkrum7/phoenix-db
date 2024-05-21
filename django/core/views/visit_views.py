@@ -63,8 +63,13 @@ def add_visit(request, class_id):
         
         return redirect('add_visit', class_id=class_id)
 
+    page_name = 'tutor'
+    if user_role == 'C':
+        page_name = 'curator'
+
     return render(request, 'core/add_visit.html', {
         'child_form_list': child_form_list,
         'group_class': group_class,
         'lessons': lessons,
+        'user_homepage' : page_name
     })
