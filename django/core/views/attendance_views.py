@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from app.models import Group, Course, GroupClass
+from app.models import Course, GroupClass, Visits, Lesson
+from django.contrib import messages
 
 ## \brief Displays the interface for tutors.
 #  \param request The HTTP request object.
@@ -62,4 +63,14 @@ def get_class_id(request):
         return redirect('login/')
     
     class_id = GroupClass.objects.values_list('class_id', flat=True).get(teacher=user_id, group=group_id, course=course_id)
+    
+    # Filter out lessons that already have visits
+    existing_lesson_ids = Visits.objects.filter(group_class=class_id).values_list('lesson_date', flat=True)
+    lessons = Lesson.objects.filter(class_instance=class_id).exclude(lesson_date__in=existing_lesson_ids)
+    print(len(lessons), len(existing_lesson_ids))
+    if not lessons:
+        messages.error(request, f'Вся посещаемость для данной группы по данному предмету уже была отмечена ранее. '
+                       'Для просмотра посещаемости перейдите в соответствующий раздел')
+        return redirect('../')
+    
     return redirect(str(class_id) + '/')

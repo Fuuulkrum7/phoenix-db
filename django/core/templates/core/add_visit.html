@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Add Visits</title>
+    <title>Отметить посещаемость</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script>
         $(document).ready(function() {
             // Hide all textareas initially
@@ -27,16 +28,27 @@
                     $(this).closest('tr').find('textarea').show();
                 }
             });
+            // Show error notification if there's an error message
+            {% if messages %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ошибка при добавлении данных',
+                        text: '{{ message }}'
+                    });
+                {% endfor %}
+            {% endif %}
         });
+        
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Add Visits for {{ group_class.group.group_name }} - {{ group_class.course.course_name }}</h1>
+        <h1>Отметить посещаемость в группе "{{ group_class.group.group_name }}", предмет - {{ group_class.course.course_name }}</h1>
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                <label for="lesson">Lesson:</label>
+                <label for="lesson">Занятие:</label>
                 <select name="lesson" id="lesson" class="form-control" required>
                     {% for lesson in lessons %}
                         <option value="{{ lesson.id }}">
@@ -49,9 +61,9 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Child</th>
-                        <th>Visited</th>
-                        <th>Reason (if not visited)</th>
+                        <th>Ребенок</th>
+                        <th>Посетил занятие</th>
+                        <th>Причина отсутствия (если не пришел на урок)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -59,17 +71,21 @@
                         <tr>
                             <td>{{ forloop.counter }}. {{ item.child.name }} {{ item.child.surname }}</td>
                             <td>
-                                <input type="hidden" name="child_id_{{ item.child.child_id }}" value="{{ item.child.child_id }}">
-                                <input type="checkbox" name="visited_{{ item.child.child_id }}" checked>
+                                <input type="hidden" name="child_id_{{ item.child.id }}" value="{{ item.child.id }}">
+                                <input type="checkbox" name="visited_{{ item.child.id }}" checked data-child-id="{{ item.child.id }}" onclick="toggleDescription(this, {{ item.child.id }})">
                             </td>
                             <td>
-                                <textarea name="description_{{ item.child.child_id }}" id="description_{{ item.child.child_id }}" class="form-control"></textarea>
+                                <textarea name="description_{{ item.child.id }}" id="description_{{ item.child.id }}" class="form-control hidden"></textarea>
                             </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <button type="submit" class="btn btn-primary">Save Visits</button>
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Сохранить посещаемость</button>
+                <a href="../../" class="btn btn-secondary ml-1">Назад к странице выбора группы</a>
+                <a href="../../../tutor" class="btn btn-secondary ml-2">Назад к странице преподавателя</a>
+            </div>
         </form>
     </div>
 </body>

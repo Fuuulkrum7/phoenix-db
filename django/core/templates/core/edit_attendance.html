@@ -2,8 +2,25 @@
 <html>
 <head>
     <title>Выбор группы</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Show error notification if there's an error message
+            {% if messages %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Иррациональное намерение',
+                        text: '{{ message }}'
+                    });
+                {% endfor %}
+            {% endif %}
+        });
+        
+    </script>
 </head>
 <body>
     
@@ -25,6 +42,8 @@
         </select>
         <button type="submit" class="btn btn-primary">Перейти к выставлению посещаемости</button>
     </form>
+
+    <a href="../tutor/" class="btn btn-secondary">Назад к странице преподавателя</a>
     
     <script>
         $(document).ready(function(){
