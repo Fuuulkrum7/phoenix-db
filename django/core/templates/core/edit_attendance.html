@@ -1,11 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Tutor Page</title>
+    <title>Выбор группы</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Show error notification if there's an error message
+            {% if messages %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Иррациональное намерение',
+                        text: '{{ message }}'
+                    });
+                {% endfor %}
+            {% endif %}
+        });
+        
+    </script>
 </head>
 <body>
-    <h1>Tutor Page</h1>
+    
+<div class="container">
+    <h4>Выберете курс и группу, которой требуется выставить посещаемость в рамках этого курса</h4>
     <form action='add-visit/' method='GET'>
         <label for="course-select">Выбор предмета:</label>
         <select class="course-select" name="course-select">
@@ -22,6 +42,8 @@
         </select>
         <button type="submit" class="btn btn-primary">Перейти к выставлению посещаемости</button>
     </form>
+
+    <a href="../{{ user_homepage }}/" class="btn btn-secondary">Назад к странице преподавателя</a>
     
     <script>
         $(document).ready(function(){
@@ -45,5 +67,6 @@
             });
         });
     </script>
+</div>
 </body>
 </html>
