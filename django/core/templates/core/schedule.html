@@ -41,8 +41,8 @@
                     <tr>
                         <td>{{ lesson.lesson_date.date }}</td>
                         <td>{{ lesson.lesson_date.time }}</td>
-                        <td>{{ lesson.class_instance.course.course_name}}</td>
-                        <td>{{ lesson.class_instance.group.group_name }}</td>
+                        <td>{{ lesson.class_id.course.course_name}}</td>
+                        <td>{{ lesson.class_id.group.group_name }}</td>
                         {% if can_add_lesson %}
                             <td>
                                 <a href="{% url 'edit_lesson' lesson.pk %}" class="btn btn-primary btn-sm">Edit</a>

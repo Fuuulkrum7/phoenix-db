@@ -17,7 +17,10 @@ def schedule(request):
         lessons = lessons.filter(lesson_date__range=(start_date, end_date))
     print("Lessons:")
     for lesson in lessons:
-        print(f"Date: {lesson.lesson_date}, Course: {lesson.class_instance.course.course_name}, Group: {lesson.class_instance.group.group_name}")
+        print(
+            f"Date: {lesson.lesson_date}, \
+                Course: {lesson.class_id.course_id.course_name}, \
+                Group: {lesson.class_id.group_id.group_name}")
     context = {
         'lessons': lessons,
         'start_date': start_date,

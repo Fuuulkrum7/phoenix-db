@@ -1,10 +1,9 @@
 # core/views/child_views.py
 
 from django import forms
-from django.utils.timezone import now
 from django.db import models as mdls
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.utils.timezone import now
+
 
 class DateRangeForm(forms.Form):
     start_date = forms.DateField(required=True, widget=forms.DateInput(attrs={'type': 'date'}))
@@ -13,8 +12,9 @@ class DateRangeForm(forms.Form):
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from app.models import (
-    Child, ChildInfo, Parent, ParentPhone, ClassHistory, Group, Course,
-    TrackType, Visits, MarksForVisit, MarkCategory, MarkType, ParentByChild
+    Child, ChildInfo, Parent, ParentPhone, ClassHistory, Course,
+    Visits, MarksForVisit, ParentByChild,
+    GroupClass
 )
 
 ## Displays detailed information about a specific child.
@@ -30,20 +30,21 @@ def child(request, child_id):
 
     # Collect related information from other tables by child object.
     child_data = Child.objects.get(child_id=child_id)
-    child_info = ChildInfo.objects.filter(child=child_data)
+    child_info = ChildInfo.objects.filter(child_id=child_data)
     # get all parents
-    parents_ids = ParentByChild.objects.values_list('parent', flat=True).filter(child=child_id)
+    parents_ids = ParentByChild.objects.values_list('parent_id', flat=True).filter(child_id=child_id)
     parents = Parent.objects.filter(parent_id__in=parents_ids)
     parents_info = [
-        (parent, ParentPhone.objects.filter(parent=parent.parent_id)) for parent in parents
+        (parent, ParentPhone.objects.filter(parent_id=parent.parent_id)) for parent in parents
     ]
     
-    group_history = ClassHistory.objects.filter(child=child_data)
-    upcoming_lessons = Visits.objects.filter(child=child_data).select_related('group_class')
-    marks = MarksForVisit.objects.filter(visit__child=child_data).select_related('mark_type', 'visit')
+    group_history = ClassHistory.objects.filter(child_id=child_data)
+    upcoming_lessons = Visits.objects.filter(child_id=child_data).select_related('group_class')
+    marks = MarksForVisit.objects.filter(visit__child_id=child_data).select_related('mark_type', 'visit')
 
     # Collect courses
-    courses = Course.objects.filter(groupclass__group__child=child_data).distinct()
+    course_ids = GroupClass.objects.values_list('course_id', flat=True).filter(group_id=child_data.current_group)
+    courses = Course.objects.filter(course_id__in=course_ids).distinct()
 
     # Prepare context data for the template rendering.
     # Обработка формы выбора даты
@@ -61,7 +62,7 @@ def child(request, child_id):
         end_date = now().date()
 
     attendance = Visits.objects.filter(
-        child=child_data,
+        child_id=child_data,
         lesson_date__range=(start_date, end_date)
     ).values('visited').annotate(count=mdls.Count('visited'))
 

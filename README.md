@@ -31,6 +31,10 @@ On Windows, you can install Docker and Docker Compose from the official website:
 https://docs.docker.com/desktop/windows/install/
 
 
+## Information about development process
+
+https://drawsql.app/teams/fuuulkrum7/diagrams/shalash
+
 ## Installation
 
 Clone the repository:
@@ -47,7 +51,16 @@ cd phoenix-bd
 
 * If you are on Linux, you need to use sudo to run next commands:
 
-# Build the Docker image:
+### Install manually
+For Linux:
+```
+sudo docker-compose exec web python manage.py migrate
+sudo docker-compose exec web python manage.py makemigrations app
+sudo docker-compose exec web python manage.py createsuperuser
+sudo dock
+```
+
+### Build the Docker image:
 For Linux:
 ```
 sudo  ./init.sh
@@ -56,7 +69,7 @@ For Windows:
 ```
 init.bat
 ```
-# Restart the Docker Compose:
+### Restart the Docker Compose:
 For Linux:
 ```
 sudo ./restart.sh
@@ -66,7 +79,7 @@ For Windows:
 restart.bat
 ```
 
-## Doxygen
+### Doxygen
 Install doxygen
 
 linux
