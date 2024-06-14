@@ -27,6 +27,12 @@ END;
 $$
 LANGUAGE 'plpgsql';
 
+CREATE TRIGGER check_semester_lesson_trigger
+    BEFORE INSERT
+    ON lesson
+    FOR EACH ROW
+    EXECUTE PROCEDURE check_semester_in_lesson();
+
 -- Here we have check for semester - is there any overlap with other lessons
 CREATE OR REPLACE FUNCTION check_add_lesson()
 RETURNS trigger AS
@@ -42,6 +48,12 @@ BEGIN
 END;
 $$
 LANGUAGE 'plpgsql';
+
+CREATE TRIGGER check_lesson_add
+    BEFORE INSERT
+    ON lesson
+    FOR EACH ROW
+    EXECUTE PROCEDURE check_add_lesson();
 
 -- Here we have same check with semester - but if there any overlap with semester
 CREATE OR REPLACE FUNCTION check_add_semester()
@@ -59,6 +71,12 @@ END;
 $$
 LANGUAGE 'plpgsql';
 
+CREATE TRIGGER check_semester_add
+    BEFORE INSERT
+    ON semester
+    FOR EACH ROW
+    EXECUTE PROCEDURE check_add_semester();
+
 CREATE OR REPLACE FUNCTION check_mark_value()
 RETURNS trigger AS
 $$
@@ -71,6 +89,12 @@ BEGIN
 END;
 $$
 LANGUAGE 'plpgsql';
+
+CREATE TRIGGER check_value_of_mark
+    BEFORE INSERT
+    ON marks_for_visit
+    FOR EACH ROW
+    EXECUTE PROCEDURE check_mark_value();
 
 CREATE OR REPLACE FUNCTION add_class_to_history()
 RETURNS trigger AS
@@ -94,6 +118,12 @@ END;
 $$
 LANGUAGE 'plpgsql';
 
+CREATE TRIGGER add_classes_to_history
+    BEFORE UPDATE
+    ON child
+    FOR EACH ROW
+    EXECUTE PROCEDURE add_class_to_history();
+
 CREATE OR REPLACE FUNCTION add_to_history_when_dismissial()
 RETURNS trigger AS
 $$
@@ -108,6 +138,12 @@ BEGIN
 END;
 $$
 LANGUAGE 'plpgsql';
+
+CREATE TRIGGER add_worker_hist_on_dismissial
+    BEFORE UPDATE
+    ON worker
+    FOR EACH ROW
+    EXECUTE PROCEDURE add_to_history_when_dismissial();
 
 CREATE OR REPLACE FUNCTION add_to_history_when_delete()
 RETURNS trigger AS
@@ -125,62 +161,8 @@ END;
 $$
 LANGUAGE 'plpgsql';
 
-CREATE OR REPLACE FUNCTION update_login_data()
-RETURNS trigger AS
-$$
-BEGIN
-    UPDATE login_data SET level_code = NEW.leave_date 
-        WHERE worker_id = NEW.worker_id AND level_code = OLD.level_code;
-
-    RETURN NEW;
-END;
-$$
-LANGUAGE 'plpgsql'; 
-
-CREATE TRIGGER check_semester_lesson_trigger
-    BEFORE INSERT
-    ON lesson
-    FOR EACH ROW
-    EXECUTE PROCEDURE check_semester_in_lesson();
-
-CREATE TRIGGER check_lesson_add
-    BEFORE INSERT
-    ON lesson
-    FOR EACH ROW
-    EXECUTE PROCEDURE check_add_lesson();
-
-CREATE TRIGGER check_semester_add
-    BEFORE INSERT
-    ON semester
-    FOR EACH ROW
-    EXECUTE PROCEDURE check_add_semester();
-
-CREATE TRIGGER check_value_of_mark
-    BEFORE INSERT
-    ON marks_for_visit
-    FOR EACH ROW
-    EXECUTE PROCEDURE check_mark_value();
-
-CREATE TRIGGER add_classes_to_history
-    BEFORE UPDATE
-    ON child
-    FOR EACH ROW
-    EXECUTE PROCEDURE add_class_to_history();
-
 CREATE TRIGGER add_worker_hist_on_delete
     BEFORE DELETE
     ON worker_by_role
     FOR EACH ROW
     EXECUTE PROCEDURE add_to_history_when_delete();
-
-CREATE TRIGGER add_worker_hist_on_dismissial
-    BEFORE UPDATE
-    ON worker
-    FOR EACH ROW
-    EXECUTE PROCEDURE add_to_history_when_dismissial();
-
-CREATE TRIGGER update_info_in_login
-    BEFORE UPDATE
-    ON worker_by_role
-    FOR EACH ROW
-    EXECUTE PROCEDURE update_login_data();

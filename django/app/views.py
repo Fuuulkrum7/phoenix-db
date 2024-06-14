@@ -20,8 +20,8 @@ def custom_login(request):
                 # Определение роли пользователя
                 try:
                     login_data = LoginData.objects.get(worker_login=username)
-                    worker = login_data.worker
-                    roles = list(WorkerByRole.objects.filter(worker=worker).values_list('level_code', flat=True))
+                    worker = login_data.worker_id
+                    roles = list(WorkerByRole.objects.filter(worker_id=worker).values_list('level_code', flat=True))
                     print(roles)
 
                     # Сохраняем данные в сессии

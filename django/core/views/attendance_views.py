@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from app.models import Course, GroupClass, Visits, Lesson
+from app.models import Course, GroupClass, Visits, Lesson, Group
 from django.contrib import messages
 
 ## \brief Displays the interface for tutors.
@@ -17,10 +17,11 @@ def attendance_view(request):
         return redirect('login/') 
     
     # groups = Group.objects.all()
-    courses = GroupClass.objects.values_list('course', flat=True).filter(teacher=user_id).distinct()
+    courses = GroupClass.objects.values_list('course_id', flat=True).filter(teacher_id=user_id).distinct()
     selected_course = Course.objects.filter(course_id__in=courses) if courses else None
     if selected_course:
-        selected_groups = GroupClass.objects.filter(course=courses.first()).values('group_id', 'group__group_name').distinct()
+        selected_groups = GroupClass.objects.filter(
+            course_id=courses.first()).values('group_id', 'group_id__group_name').distinct()
     else:
         selected_groups = []
     
@@ -47,7 +48,10 @@ def get_groups_by_course(request, course_id):
         # Handle case where user_id is not in session
         return redirect('login/') 
     
-    groups = GroupClass.objects.filter(course_id=course_id, teacher=user_id).values('group_id', 'group__group_name').distinct()
+    groups = GroupClass.objects.filter(
+        course_id=course_id, teacher_id=user_id
+    ).values('group_id', 'group_id__group_name').distinct()
+    
     return JsonResponse(list(groups), safe=False)
 
 ## \brief Displays the interface to add visit marks.
@@ -68,11 +72,12 @@ def get_class_id(request):
         # Handle case where user_id is not in session
         return redirect('login/')
     
-    class_id = GroupClass.objects.values_list('class_id', flat=True).get(teacher=user_id, group=group_id, course=course_id)
+    class_id = GroupClass.objects.values_list('class_id', flat=True).get(
+        teacher_id=user_id, group_id=group_id, course_id=course_id)
     
     # Filter out lessons that already have visits
-    existing_lesson_ids = Visits.objects.filter(group_class=class_id).values_list('lesson_date', flat=True)
-    lessons = Lesson.objects.filter(class_instance=class_id).exclude(lesson_date__in=existing_lesson_ids)
+    existing_lesson_ids = Visits.objects.filter(class_id=class_id).values_list('lesson_date', flat=True)
+    lessons = Lesson.objects.filter(class_id=class_id).exclude(lesson_date__in=existing_lesson_ids)
     print(len(lessons), len(existing_lesson_ids))
     if not lessons:
         messages.error(request, f'Вся посещаемость для данной группы по данному предмету уже была отмечена ранее. '
