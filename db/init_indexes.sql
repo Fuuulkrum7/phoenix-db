@@ -5,7 +5,6 @@ CREATE INDEX index_child_group ON child(current_group_id);
 CREATE INDEX index_class_u ON group_class(teacher_id, group_id, course_id);
 
 CREATE INDEX index_parent_phones_u ON parent_phones(parent_id, phone_number);
-CREATE INDEX index_parent_f ON parent(child_id);
 
 CREATE INDEX index_visits_u ON visits(child_id, class_id, lesson_date);
 CREATE INDEX index_visits_by_lesson ON visits(class_id, lesson_date);

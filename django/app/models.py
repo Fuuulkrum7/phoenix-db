@@ -51,6 +51,11 @@ class Child(models.Model):
     
     class Meta:
         db_table = "child"
+        
+        indexes = [
+            models.Index(fields=['current_group']),
+        ]
+        
         constraints = [
             models.CheckConstraint(check=models.Q(birthday__lt=models.functions.Now()), name='check_birthday_lt_current_date')
         ]
@@ -77,6 +82,10 @@ class ParentByChild(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['parent_id', 'child_id'], name='primary_parent_by_child')
         ]
+        
+        indexes = [
+            models.Index(fields=['child_id', 'parent_id']),
+        ]
 
 ## \class ParentPhone
 ## \brief Represents the phone number of a parent.
@@ -89,6 +98,10 @@ class ParentPhone(models.Model):
         
         constraints = [
             models.UniqueConstraint(fields=['parent_id', 'phone_number'], name='unique_parent_phone')
+        ]
+        
+        indexes = [
+            models.Index(fields=['parent_id', 'phone_number']),
         ]
 
 ## \class Worker
@@ -134,6 +147,10 @@ class WorkerByRole(models.Model):
             models.CheckConstraint(check=models.Q(tensure_start_date__lte=models.functions.Now()), name='check_tens_st_date_le_curr_date'),
             models.UniqueConstraint(fields=['level_code', 'worker_id'], name='primary_worker_role')
         ]
+        
+        indexes = [
+            models.Index(fields=['worker_id', 'level_code']),
+        ]
 
 ## \class LoginData
 ## \brief Represents login data for a worker.
@@ -168,6 +185,10 @@ class WorkerHistory(models.Model):
             models.UniqueConstraint(
                 fields=['worker_id', 'level_code', 'tensure_start_date'], name='unique_level_worker_tensure_date'
             )
+        ]
+        
+        indexes = [
+            models.Index(fields=['worker_id', 'level_code', 'tensure_start_date']),
         ]
 
 ## \class Course
@@ -231,6 +252,10 @@ class CourseAuthor(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['course_id', 'author_id'], name='primary_course_by_author')
         ]
+        
+        indexes = [
+            models.Index(fields=['author_id', 'course_id']),
+        ]
 
 ## \class GroupClass
 ## \brief Represents a class within a group, associated with a teacher and a course.
@@ -246,6 +271,10 @@ class GroupClass(models.Model):
         
         constraints = [
             models.UniqueConstraint(fields=['teacher_id', 'group_id', 'course_id'], name='unique_class')
+        ]
+        
+        indexes = [
+            models.Index(fields=['teacher_id', 'group_id', 'course_id']),
         ]
 
 ## \class ClassHistory
@@ -264,6 +293,10 @@ class ClassHistory(models.Model):
             models.CheckConstraint(check=models.Q(leave_date__gte=models.F('add_date')), name='check_leave_date_ge_add_date'),
             models.UniqueConstraint(fields=['child_id', 'class_id'], name='primary_class_history')
         ]
+        
+        indexes = [
+            models.Index(fields=['child_id', 'class_id']),
+        ]
 
 ## \class CourseComment
 ## \brief Represents comments about a course.
@@ -278,19 +311,27 @@ class CourseComment(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['course_id', 'author_id'], name='primary_course_comments')
         ]
+        
+        indexes = [
+            models.Index(fields=['course_id', 'author_id']),
+        ]
 
 ## \class ChildInfo
 ## \brief Represents information about a child, such as comments.
 class ChildInfo(models.Model):
     child_id = models.ForeignKey(Child, on_delete=models.CASCADE, db_column="child_id")
-    author = models.ForeignKey(Worker, on_delete=models.CASCADE, db_column="author_id")
+    author_id = models.ForeignKey(Worker, on_delete=models.CASCADE, db_column="author_id")
     description = models.CharField(max_length=512, null=False, db_column="description")
 
     class Meta:
         db_table = "child_info"
         
         constraints = [
-            models.UniqueConstraint(fields=['child_id', 'author'], name='primary_child_info')
+            models.UniqueConstraint(fields=['child_id', 'author_id'], name='primary_child_info')
+        ]
+        
+        indexes = [
+            models.Index(fields=['child_id', 'author_id']),
         ]
 
 ## \class ClassInfo
@@ -305,6 +346,10 @@ class ClassInfo(models.Model):
         
         constraints = [
             models.UniqueConstraint(fields=['class_id', 'author_id'], name='primary_class_info')
+        ]
+        
+        indexes = [
+            models.Index(fields=['class_id', 'author_id']),
         ]
 
 ## \class Semester
@@ -352,13 +397,18 @@ class Report(models.Model):
         constraints = [
             models.UniqueConstraint(fields=['child_id', 'class_id', 'semester', 'filename'], name='primary_reports')
         ]
+        
+        indexes = [
+            models.Index(fields=['class_id', 'semester']),
+            models.Index(fields=['child_id', 'class_id', 'semester', 'filename'])
+        ]
 
 ## \class Visit
 ## \brief Represents a visit record for a child to a lesson.
 class Visits(models.Model):
     visit_id = models.AutoField(primary_key=True, db_column="visit_id")
     child_id = models.ForeignKey(Child, on_delete=models.CASCADE, db_column="child_id")
-    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE, db_column="group_class")
+    class_id = models.ForeignKey(GroupClass, on_delete=models.CASCADE, db_column="class_id")
     lesson_date = models.DateTimeField(null=False, db_column="lesson_date")
     description = models.CharField(max_length=96, null=True, db_column="description")
     visited = models.BooleanField(default=True, db_column="visited")
@@ -368,6 +418,11 @@ class Visits(models.Model):
         
         constraints = [
             models.UniqueConstraint(fields=['child_id', 'group_class', 'lesson_date'], name='unique_visit')
+        ]
+        
+        indexes = [
+            models.Index(fields=['child_id', 'class_id', 'lesson_date']),
+            models.Index(fields=['class_id', 'lesson_date'])
         ]
     
     def clean(self):
@@ -390,6 +445,10 @@ class GroupCreators(models.Model):
         
         constraints = [
             models.UniqueConstraint(fields=['group_id', 'curator_id'], name='primary_group_by_creator')
+        ]
+        
+        indexes = [
+            models.Index(fields=['group_id', 'curator_id']),
         ]
 
 ## \class MarksForVisit

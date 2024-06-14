@@ -76,7 +76,7 @@ def get_class_id(request):
         teacher_id=user_id, group_id=group_id, course_id=course_id)
     
     # Filter out lessons that already have visits
-    existing_lesson_ids = Visits.objects.filter(group_class=class_id).values_list('lesson_date', flat=True)
+    existing_lesson_ids = Visits.objects.filter(class_id=class_id).values_list('lesson_date', flat=True)
     lessons = Lesson.objects.filter(class_id=class_id).exclude(lesson_date__in=existing_lesson_ids)
     print(len(lessons), len(existing_lesson_ids))
     if not lessons:

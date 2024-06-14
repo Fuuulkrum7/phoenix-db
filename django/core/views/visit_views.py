@@ -24,7 +24,7 @@ def add_visit(request, class_id):
     group = group_class.group_id  # Get the associated group
 
     # Filter out lessons that already have visits
-    existing_lesson_ids = Visits.objects.filter(group_class=group_class).values_list('lesson_date', flat=True)
+    existing_lesson_ids = Visits.objects.filter(class_id=group_class).values_list('lesson_date', flat=True)
     lessons = Lesson.objects.filter(class_id=group_class).exclude(lesson_date__in=existing_lesson_ids)
 
     for lesson in lessons:
@@ -44,7 +44,7 @@ def add_visit(request, class_id):
 
             visit = Visits(
                 child_id=child,
-                group_class_id=class_id,
+                class_id=class_id,
                 lesson_date=lesson.lesson_date,
                 description=description,
                 visited=visited
