@@ -39,8 +39,8 @@ RETURNS trigger AS
 $$
 BEGIN
     IF EXISTS (SELECT 1 FROM lesson WHERE 
-                  NEW.lesson_date >= lesson_date AND NEW.lesson_date < lesson_date + duration OR 
-                  NEW.lesson_date + duration > lesson_date AND NEW.lesson_date <= lesson_date) THEN
+                  NEW.lesson_date >= lesson_date AND NEW.lesson_date < (lesson_date + (INTERVAL '1 min' * duration)) OR 
+                  (NEW.lesson_date + (INTERVAL '1 min' * NEW.duration)) > lesson_date AND NEW.lesson_date <= lesson_date) THEN
         RAISE EXCEPTION 'Incorrect lesson start time';
     END IF;
 
@@ -62,7 +62,7 @@ $$
 BEGIN
     IF EXISTS (SELECT 1 FROM semester WHERE 
                   NEW.start_date >= start_date AND NEW.start_date < end_date OR 
-                  NEW.end_date > start_date AND NEW.end_date =< end_date) THEN
+                  NEW.end_date > start_date AND NEW.end_date <= end_date) THEN
         RAISE EXCEPTION 'Incorrect semester period';
     END IF;
 

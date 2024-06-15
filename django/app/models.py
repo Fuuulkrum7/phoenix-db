@@ -417,7 +417,7 @@ class Visits(models.Model):
         db_table = "visits"
         
         constraints = [
-            models.UniqueConstraint(fields=['child_id', 'group_class', 'lesson_date'], name='unique_visit')
+            models.UniqueConstraint(fields=['child_id', 'class_id', 'lesson_date'], name='unique_visit')
         ]
         
         indexes = [
@@ -427,7 +427,7 @@ class Visits(models.Model):
     
     def clean(self):
         super().clean()
-        if not Lesson.objects.filter(class_id=self.group_class, lesson_date=self.lesson_date).exists():
+        if not Lesson.objects.filter(class_id=self.class_id, lesson_date=self.lesson_date).exists():
             raise ValidationError('Invalid combination of class_id and lesson_date.')
 
 @receiver(pre_save, sender=Visits)

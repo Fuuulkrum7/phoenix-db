@@ -10,5 +10,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunSQL(open("../db/init_triggers").read())
+        # migrations.RunSQL(open("init_triggers.sql").read())
     ]
