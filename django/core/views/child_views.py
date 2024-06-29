@@ -39,7 +39,7 @@ def child(request, child_id):
     ]
     
     group_history = ClassHistory.objects.filter(child_id=child_data)
-    upcoming_lessons = Visits.objects.filter(child_id=child_data).select_related('group_class')
+    upcoming_lessons = Visits.objects.filter(child_id=child_data).select_related('class_id')
     marks = MarksForVisit.objects.filter(visit__child_id=child_data).select_related('mark_type', 'visit')
 
     # Collect courses

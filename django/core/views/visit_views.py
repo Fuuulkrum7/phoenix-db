@@ -44,7 +44,7 @@ def add_visit(request, class_id):
 
             visit = Visits(
                 child_id=child,
-                class_id=GroupClass.objects.get(class_id=class_id),
+                class_id=group_class,
                 lesson_date=lesson.lesson_date,
                 description=description,
                 visited=visited
