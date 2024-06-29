@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Mark Attendance</title>
+    <title>Отметить посещаемость</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <style>
@@ -51,19 +51,19 @@
 </head>
 <body>
     <div class="container">
-        <h1>Mark Attendance</h1>
+        <h1>Отметить посещаемость</h1>
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                <label for="date">Select Date:</label>
+                <label for="date">Выбор даты:</label>
                 <input type="date" id="date" name="date" class="form-control" value="{{ date }}" onchange="this.form.submit()">
             </div>
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Full Name</th>
-                        <th>Present</th>
-                        <th>Note</th>
+                        <th>Имя</th>
+                        <th>Присутвовал(а)</th>
+                        <th>Заметки</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -80,7 +80,7 @@
                     {% endfor %}
                 </tbody>
             </table>
-            <button type="submit" class="btn btn-primary">Save Attendance</button>
+            <button type="submit" class="btn btn-primary">Сохранить</button>
         </form>
     </div>
 </body>
