@@ -2,33 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Child Details</title>
+    <title>Информация о ребенке</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Child Details</h1>
+        <h1></h1>
         <div class="card mb-3">
             <div class="card-header">
                 <h2>{{ child.name }} {{ child.surname }}</h2>
             </div>
             <div class="card-body">
-                <p><strong>Gender:</strong> {{ child.gender }}</p>
-                <p><strong>Date of Birth:</strong> {{ child.birthday }}</p>
-                <p><strong>Group:</strong>
+                <p><strong>Пол:</strong> {{ child.gender }}</p>
+                <p><strong>Дата рождения:</strong> {{ child.birthday }}</p>
+                <p><strong>Группа:</strong>
                     {% if child.current_group %}
                         {{ child.current_group.track_type.track_type_id }}
                     {% else %}
                         N/A
                     {% endif %}
                 </p>
-                <h4>Child Info</h4>
+                <h4>Дополнительные заметки по ребенку</h4>
                 <ul>
                     {% for info in child_info %}
-                        <li>{{ info.description }}</li>
+                        <li>Автор: {{ info.author_id.name }} {{ info.author_id.surname }}. Комментарий: {{ info.description }}</li>
                     {% endfor %}
                 </ul>
-                <h4>Courses</h4>
+                <h4>Курсы</h4>
                 <ul>
                     {% for course in courses %}
                         <li>{{ course.course_name }}</li>
@@ -39,15 +39,15 @@
 
         <div class="card mb-3">
             <div class="card-header">
-                <h3>Group History</h3>
+                <h3>История групп</h3>
             </div>
             <div class="card-body">
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Group</th>
-                            <th>Start Date</th>
-                            <th>End Date</th>
+                            <th>Группа</th>
+                            <th>Дата начала</th>
+                            <th>Дата конца</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,23 +65,23 @@
 
         <div class="card mb-3">
             <div class="card-header">
-                <h3>Upcoming Lessons</h3>
+                <h3>Предстоящие занятия </h3>
             </div>
             <div class="card-body">
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Lesson</th>
+                            <th>Дата</th>
+                            <th>Время</th>
+                            <th>Занятие</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for lesson in upcoming_lessons %}
                             <tr>
                                 <td>{{ lesson.lesson_date.date }}</td>
-                                <td>{{ lesson.lesson_date.time }}</td>
-                                <td>{{ lesson.class_id.course.course_name }}</td>
+                                <td>{{ lesson.lesson_date.time|time:'H:i' }}</td>
+                                <td>{{ lesson.class_id.course_id.course_name }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -91,7 +91,7 @@
 
         <div class="card mb-3">
             <div class="card-header">
-                <h3>Parents</h3>
+                <h3>Родители</h3>
             </div>
             <div class="card-body">
                 <ul>
@@ -109,15 +109,15 @@
 
         <div class="card mb-3">
             <div class="card-header">
-                <h3>Marks</h3>
+                <h3>Оценки</h3>
             </div>
             <div class="card-body">
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Lesson Date</th>
-                            <th>Mark Type</th>
-                            <th>Mark</th>
+                            <th>Дата занятия</th>
+                            <th>Тип оценки</th>
+                            <th>Оценка</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -135,31 +135,31 @@
 
         <div class="card mb-3">
             <div class="card-header">
-                <h3>Statistics</h3>
+                <h3>Статистика</h3>
             </div>
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
                     <div class="form-group">
-                        <label for="start_date">Start Date:</label>
+                        <label for="start_date">Дата начала:</label>
                         {{ form.start_date }}
                     </div>
                     <div class="form-group">
-                        <label for="end_date">End Date:</label>
+                        <label for="end_date">Дата конца:</label>
                         {{ form.end_date }}
                     </div>
-                    <button type="submit" class="btn btn-primary">Get Statistics</button>
+                    <button type="submit" class="btn btn-primary">Посмотреть статистику</button>
                 </form>
-                <h4>Attendance</h4>
+                <h4>Посещаемость</h4>
                 <ul>
                     {% for entry in attendance %}
                         <li>{{ entry.visited }}: {{ entry.count }}</li>
                     {% endfor %}
                 </ul>
-                <h4>Skill Analysis</h4>
-                <p>Average Skill Mark: {{ skill_analysis.mark__avg }}</p>
-                <h4>Behavior Analysis</h4>
-                <p>Average Behavior Mark: {{ behavior_analysis.mark__avg }}</p>
+                <h4>Оценка навыков</h4>
+                <p>Средняя оценка навыков: {{ skill_analysis.mark__avg }}</p>
+                <h4>Анализ поведения</h4>
+                <p>Средняя оценка поведения: {{ behavior_analysis.mark__avg }}</p>
             </div>
         </div>
     </div>

@@ -2,14 +2,18 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Create Group</title>
+    <meta charset="UTF-8">
+    <title>Добавить курс</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
-    <h1>Create Group</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create Group</button>
-    </form>
+    <div class="container">
+        <h1>Добавить курс</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Добавить</button>
+        </form>
+    </div>
 </body>
 </html>

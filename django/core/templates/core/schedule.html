@@ -2,37 +2,37 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Schedule</title>
+    <title>Расписание</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Schedule</h1>
+        <h1>Расписание</h1>
         <form method="get" class="form-inline mb-3">
             <div class="form-group mx-sm-3 mb-2">
-                <label for="start_date" class="sr-only">Start Date</label>
+                <label for="start_date" class="sr-only">Дата начала</label>
                 <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
             </div>
             <div class="form-group mx-sm-3 mb-2">
-                <label for="end_date" class="sr-only">End Date</label>
+                <label for="end_date" class="sr-only">Дата конца</label>
                 <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
             </div>
-            <button type="submit" class="btn btn-primary mb-2">Filter</button>
+            <button type="submit" class="btn btn-primary mb-2">Найти</button>
         </form>
 
         {% if can_add_lesson %}
-            <a href="{% url 'add_lesson' %}" class="btn btn-success mb-3">Add Lesson</a>
+            <a href="{% url 'add_lesson' %}" class="btn btn-success mb-3">Добавить занятие</a>
         {% endif %}
 
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Lesson</th>
-                    <th>Group</th>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Занятие</th>
+                    <th>Группа</th>
                     {% if can_add_lesson %}
-                        <th>Actions</th>
+                        <th>Действия</th>
                     {% endif %}
                 </tr>
             </thead>
@@ -45,7 +45,7 @@
                         <td>{{ lesson.class_id.group.group_name }}</td>
                         {% if can_add_lesson %}
                             <td>
-                                <a href="{% url 'edit_lesson' lesson.pk %}" class="btn btn-primary btn-sm">Edit</a>
+                                <a href="{% url 'edit_lesson' lesson.pk %}" class="btn btn-primary btn-sm">Править</a>
                             </td>
                         {% endif %}
                     </tr>

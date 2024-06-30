@@ -3,17 +3,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Curator Page</title>
+    <title>Куратор</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Curator Page</h1>
-        <a href="{% url 'add_tutor' %}" class="btn btn-success mb-3">Add Tutor</a>
-        <a href="{% url 'add_child' %}" class="btn btn-success mb-3">Add Child</a>
-        <a href="{% url 'add_group' %}" class="btn btn-success mb-3">Create Group</a>
-        <a href="{% url 'schedule' %}" class="btn btn-info mb-3">View Schedule</a>
-        
+        <h1>Куратор</h1>
+        <a href="{% url 'add_leader' %}" class="btn btn-success mb-3">Добавить ведущего</a>
+        <a href="{% url 'add_child' %}" class="btn btn-success mb-3">Добавить ребёнка</a>
+        <a href="{% url 'create_group' %}" class="btn btn-success mb-3">Создать группу</a>
+        <a href="{% url 'schedule' %}" class="btn btn-info mb-3">Посмотреть расписание</a>
+        <a href="{% url 'view_attendance' %}" class="btn btn-primary mb-3">Посмотреть посещаемость</a>
     </div>
 </body>
 </html>
