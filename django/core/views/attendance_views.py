@@ -46,7 +46,7 @@ def get_groups_by_course(request, course_id):
 
     if not user_id:
         # Handle case where user_id is not in session
-        return redirect('login/') 
+        return redirect('login/')
     
     groups = GroupClass.objects.filter(
         course_id=course_id, teacher_id=user_id

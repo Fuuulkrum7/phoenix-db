@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Add Lesson</title>
+    <title>Добавить занятие</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 </head>
 <body>
     <div class="container">
-        <h1>Add Lesson</h1>
+        <h1>Добавить занятие</h1>
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-success">Add</button>
+            <button type="submit" class="btn btn-success">Добавить</button>
         </form>
     </div>
 </body>

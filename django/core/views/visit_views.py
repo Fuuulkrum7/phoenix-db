@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from app.models import Visits, Child, GroupClass, Lesson
+from app.models import Visits, Child, GroupClass, Lesson, Group
 from django.contrib import messages
 from django.db import IntegrityError
 from django.shortcuts import render, redirect, get_object_or_404
@@ -44,11 +44,12 @@ def add_visit(request, class_id):
 
             visit = Visits(
                 child_id=child,
-                class_id=class_id,
+                class_id=group_class,
                 lesson_date=lesson.lesson_date,
                 description=description,
                 visited=visited
             )
+            
             try:
                 visit.clean()
                 visit.save()

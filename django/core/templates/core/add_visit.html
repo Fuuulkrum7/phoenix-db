@@ -44,7 +44,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Отметить посещаемость в группе "{{ group_class.group.group_name }}", предмет - {{ group_class.course.course_name }}</h1>
+        <h1>Отметить посещаемость в группе "{{ group_class.group_id.group_name }}", предмет - {{ group_class.course_id.course_name }}</h1>
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
