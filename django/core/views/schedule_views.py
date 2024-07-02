@@ -16,8 +16,8 @@ def schedule(request):
     if not (start_date and end_date):
         try:
             cur_semester = Semester.objects.get(start_date__lte=date.today(), end_date__gte=date.today())
-            start_date = date.today()
-            end_date = cur_semester.end_date
+            start_date = start_date if start_date else date.today()
+            end_date = end_date if end_date else cur_semester.end_date
         except Exception as e:
             print(e)
         
