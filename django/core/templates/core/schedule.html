@@ -10,12 +10,12 @@
         <h1>Расписание</h1>
         <form method="get" class="form-inline mb-3">
             <div class="form-group mx-sm-3 mb-2">
-                <label for="start_date" class="sr-only">Дата начала</label>
-                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                <label for="start_date" class="sr-only">Дата начала / {{ start_date|date:'Y-m-d' }}</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
             </div>
             <div class="form-group mx-sm-3 mb-2">
-                <label for="end_date" class="sr-only">Дата конца</label>
-                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                <label for="end_date" class="sr-only">Дата конца / {{ end_date|date:'Y-m-d' }}</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
             </div>
             <button type="submit" class="btn btn-primary mb-2">Найти</button>
         </form>
@@ -41,11 +41,11 @@
                     <tr>
                         <td>{{ lesson.lesson_date.date }}</td>
                         <td>{{ lesson.lesson_date.time }}</td>
-                        <td>{{ lesson.class_id.course.course_name}}</td>
-                        <td>{{ lesson.class_id.group.group_name }}</td>
+                        <td>{{ lesson.class_id.course_id.course_name}}</td>
+                        <td>{{ lesson.class_id.group_id.group_name }}</td>
                         {% if can_add_lesson %}
                             <td>
-                                <a href="{% url 'edit_lesson' lesson.pk %}" class="btn btn-primary btn-sm">Править</a>
+                                <a href="{% url 'edit_lesson' %}" class="btn btn-primary btn-sm">Править</a>
                             </td>
                         {% endif %}
                     </tr>
