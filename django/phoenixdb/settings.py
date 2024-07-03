@@ -136,7 +136,7 @@ STATIC_URL = '/static/'
 
 ## @var STATIC_ROOT
 #  The absolute path to the directory where collectstatic will collect static files for deployment.
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'core' / 'static'
 
 ## @var MEDIA_URL
 #  URL that handles the media served from MEDIA_ROOT, used for managing stored media.
