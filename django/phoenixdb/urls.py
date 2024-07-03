@@ -11,6 +11,9 @@ from django.urls import include, path
 from app.views import custom_login
 from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
+from . import settings
+from django.conf.urls.static import static
+
 # from app.views import forbidden
 
 ## List of URL patterns for the phoenixdb application.
@@ -28,4 +31,4 @@ urlpatterns = [
     path('child/', include('core.urls.child')),  # Includes all URL patterns for child module.
     path('statistics/', include('core.urls.statistics')),  # Includes all URL patterns for statistics module.
     path('', lambda request: redirect('login')),  # Redirects root requests to login page.
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
