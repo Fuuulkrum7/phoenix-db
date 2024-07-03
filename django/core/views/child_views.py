@@ -3,6 +3,7 @@
 from django import forms
 from django.db import models as mdls
 from django.utils.timezone import now
+from django.utils.translation import activate
 
 
 class DateRangeForm(forms.Form):
@@ -14,7 +15,7 @@ from django.contrib.auth.decorators import login_required
 from app.models import (
     Child, ChildInfo, Parent, ParentPhone, ClassHistory, Course,
     Visits, MarksForVisit, ParentByChild,
-    GroupClass
+    GroupClass, Lesson, Group
 )
 
 ## Displays detailed information about a specific child.
@@ -30,7 +31,8 @@ def child(request, child_id):
 
     # Collect related information from other tables by child object.
     child_data = Child.objects.get(child_id=child_id)
-    child_info = ChildInfo.objects.filter(child_id=child_data)
+    child_info = ChildInfo.objects.prefetch_related("author_id").filter(child_id=child_data)
+    print([info.author_id.name for info in child_info])
     # get all parents
     parents_ids = ParentByChild.objects.values_list('parent_id', flat=True).filter(child_id=child_id)
     parents = Parent.objects.filter(parent_id__in=parents_ids)
@@ -39,7 +41,10 @@ def child(request, child_id):
     ]
     
     group_history = ClassHistory.objects.filter(child_id=child_data)
-    upcoming_lessons = Visits.objects.filter(child_id=child_data).select_related('class_id')
+    
+    child_classes = GroupClass.objects.filter(group_id=child_data.current_group).select_related('group_class')
+    upcoming_lessons = Lesson.objects.filter(class_id__in=child_classes)
+    
     marks = MarksForVisit.objects.filter(visit__child_id=child_data).select_related('mark_type', 'visit')
 
     # Collect courses

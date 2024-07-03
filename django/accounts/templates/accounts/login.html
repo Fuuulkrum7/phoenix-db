@@ -1,19 +1,19 @@
 <!-- accounts/templates/accounts/login.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     {% load static %}
     <link rel="stylesheet" href="{% static 'styles/global.css' %}">
     <meta charset="UTF-8">
-    <title>Login</title>
+    <title>Авторизация</title>
 </head>
 <body>
     <div class="container">
-        <h1>Login</h1>
+        <h1>Авторизация</h1>
         <form method="post">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-primary">Вход</button>
         </form>
     </div>
 </body>

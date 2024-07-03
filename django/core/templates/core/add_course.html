@@ -2,16 +2,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    {% load static %}
+   {% load static %}
     <link rel="stylesheet" href="{% static 'styles/global.css' %}">
-    <title>Create Group</title>
+    <meta charset="UTF-8">
+    <title>Добавить курс</title>
 </head>
 <body>
-    <h1>Create Group</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Create Group</button>
-    </form>
+    <div class="container">
+        <h1>Добавить курс</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Добавить</button>
+        </form>
+    </div>
 </body>
 </html>

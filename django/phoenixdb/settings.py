@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 #  List of middleware to handle requests during response and request phases.
 #  Middleware are hooks into Django's request/response processing.
 MIDDLEWARE = [
+    'django.middleware.locale.LocaleMiddleware'
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -112,7 +113,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'
 
 ## @var TIME_ZONE
 #  Default time zone for the Django application.
