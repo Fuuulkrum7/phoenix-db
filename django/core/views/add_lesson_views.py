@@ -8,7 +8,7 @@ from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib import messages
 from django.db import IntegrityError
 
-from app.models import GroupClass, Semester, Lesson
+from app.models import GroupClass, Worker, Lesson, Course
 
 ## \brief basic page for adding 
 @login_required
@@ -16,19 +16,23 @@ def add_lesson(request: HttpRequest) -> HttpResponse:
     user_id = request.session.get('user_id')
     user_role = request.session.get('user_role')
 
-    if not user_id or not (user_role in ['C']):
+    if not user_id or not (user_role in ['C', 'T']):
         # Handle case where user_id is not in session
         return redirect('../../login/')
     
-    possible_teachers = GroupClass.objects.all().values("teacher_id", flat=True)
+    possible_teachers = GroupClass.objects.all().values(
+        "teacher_id", "teacher_id__name", "teacher_id__surname", "teacher_id__patronymic").distinct()
     possible_courses = []
     possible_groups = []
     
     if len(possible_teachers):
-        possibleCourses = GroupClass.objects.filter(teacher_id=possible_teachers[0])
+        teacher = possible_teachers[0]["teacher_id"]
+        possibleCourses = GroupClass.objects.filter(teacher_id=possible_teachers[0]["teacher_id"])\
+                .values_list("course_id", flat=True).distinct()
         
-    if len(possibleCourses):
-        possible_groups = GroupClass.objects.filter(course_id=possibleCourses[0])
+        if len(possibleCourses):
+            possible_groups = GroupClass.objects.filter(teacher_id=teacher,
+                course_id=possibleCourses[0]).distinct()
     
     page_name = 'curator'
     # if user_role == 'T':
@@ -49,7 +53,7 @@ def get_courses_by_teacher(request: HttpRequest, teacher_id: int) -> JsonRespons
     user_id = request.session.get('user_id')
     user_role = request.session.get('user_role')
 
-    if not user_id or not (user_role in ['C']):
+    if not user_id or not (user_role in ['C', 'T']):
         # Handle case where user_id is not in session
         return redirect('../../../../login/')
 
@@ -63,7 +67,7 @@ def get_groups_by_course(request: HttpRequest, teacher_id: int, course_id: int) 
     user_id = request.session.get('user_id')
     user_role = request.session.get('user_role')
 
-    if not user_id or not (user_role in ['C']):
+    if not user_id or not (user_role in ['C', 'T']):
         # Handle case where user_id is not in session
         return redirect('../../../../login/')
     
@@ -74,11 +78,11 @@ def get_groups_by_course(request: HttpRequest, teacher_id: int, course_id: int) 
     
     return JsonResponse(list(possibleGroupes), safe=False)
 
-def add_lesson_with_data(request: HttpRequest) -> HttpResponse:
+def add_new_lesson(request: HttpRequest) -> HttpResponse:
     user_id = request.session.get('user_id')
     user_role = request.session.get('user_role')
 
-    if not user_id or not (user_role in ['C']):
+    if not user_id or not (user_role in ['C', 'T']):
         # Handle case where user_id is not in session
         return redirect('../../../login/')
     

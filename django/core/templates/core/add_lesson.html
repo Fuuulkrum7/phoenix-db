@@ -1,20 +1,135 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="{% static 'styles/global.css' %}">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-   <title>Добавить занятие</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Добавить занятие</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Show error notification if there's an error message
+            {% if messages %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Ошибка',
+                        text: '{{ message }}'
+                    });
+                {% endfor %}
+            {% endif %}
+            
+            // Update courses based on selected teacher
+            $('#teacher-select').change(function(){
+                var teacherId = $(this).val();
+                if(teacherId) {
+                    $('#course-select').empty();
+                    $.ajax({
+                        url: '{% url "get_courses_by_teacher" 0 %}'.replace(0, teacherId),
+                        success: function(data){
+                            var toAppend = '<option value="">Выберите курс</option>';
+                            for (var i = 0; i < data.length; i++){
+                                toAppend += '<option value="' + data[i].course_id + '">' + data[i]['course_id__course_name'] + '</option>';
+                            }
+                            $('#course-select').append(toAppend);
+                        }
+                    });
+                }
+            });
+
+            // Update groups based on selected course
+            $('#course-select').change(function(){
+                var teacherId = $('#teacher-select').val();
+                var courseId = $(this).val();
+                if(courseId && teacherId) {
+                    $('#group-select').empty();
+                    $.ajax({
+                        url: '{% url "get_groups_by_course" 0 0 %}'.replace(/0\/0/, teacherId + '/' + courseId),
+                        success: function(data){
+                            var toAppend = '<option value="">Выберите группу</option>';
+                            for (var i = 0; i < data.length; i++){
+                                toAppend += '<option value="' + data[i].group_id + '">' + data[i]['group_id__group_name'] + '</option>';
+                            }
+                            $('#group-select').append(toAppend);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Добавить занятие</h1>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit" class="btn btn-success">Добавить</button>
-        </form>
+<div class="container">
+    <h1 class="my-3">Добавить занятие</h1>
+    <form method="post" action="{% url 'add_new_lesson' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="teacher-select">Выбор учителя:</label>
+            <select id="teacher-select" name="teacher-select" class="form-control">
+                <option value="">Выберите учителя</option>
+                {% for teacher in possible_teachers %}
+                    <option value="{{ teacher.teacher_id }}">{{ teacher.teacher_id__surname }} {{ teacher.teacher_id__name }} {{ teacher.teacher_id__patronymic }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="course-select">Выбор курса:</label>
+            <select id="course-select" name="course-select" class="form-control">
+                <option value="">Сначала выберите учителя</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="group-select">Выбор группы:</label>
+            <select id="group-select" name="group-select" class="form-control">
+                <option value="">Сначала выберите курс</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="choose-date">Дата:</label>
+            <input type="date" id="choose-date" name="choose-date" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="choose-time">Время:</label>
+            <input type="time" id="choose-time" name="choose-time" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="duration">Длительность (минут):</label>
+            <input type="number" id="duration" name="duration" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Добавить занятие</button>
+    </form>
+    
+    <a href="../{{ user_homepage }}/" class="btn btn-secondary mt-3">Назад</a>
+
+    <h2 class="my-3">Ранее добавленные занятия</h2>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Курс</th>
+                    <th>Группа</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lesson in lessons %}
+                    <tr>
+                        <td>{{ lesson.lesson_date.date }}</td>
+                        <td>{{ lesson.lesson_date.time }}</td>
+                        <td>{{ lesson.class_id.course_id.course_name}}</td>
+                        <td>{{ lesson.class_id.group_id.group_name }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

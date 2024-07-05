@@ -21,7 +21,8 @@ def schedule(request):
         except Exception as e:
             print(e)
         
-    classes = GroupClass.objects.filter(teacher_id=user_id).select_related('group_class')
+    classes = GroupClass.objects.filter(teacher_id=user_id)\
+            .select_related('group_class')
     lessons = Lesson.objects.filter(class_id__in=classes)
 
 
