@@ -14,7 +14,7 @@ def attendance_view(request):
 
     if not user_id or not (user_role in ['T', 'C']):
         # Handle case where user_id is not in session
-        return redirect('login/') 
+        return redirect('../login/') 
     
     # groups = Group.objects.all()
     courses = GroupClass.objects.values_list('course_id', flat=True).filter(teacher_id=user_id).distinct()
