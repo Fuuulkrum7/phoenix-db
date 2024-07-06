@@ -15,17 +15,17 @@
                 <label for="groupSelect">Выбор группы</label>
                 <select id="groupSelect" name="group" class="form-control" onchange="this.form.submit()">
                     {% for group in groups %}
-                        <option value="{{ group.group_id }}" {% if group == selected_group %}selected{% endif %}>{{ forloop.counter }}</option>
+                        <option value="{{ group.group_id }}" {% if group == selected_group %}selected{% endif %}>{{ group.group_name }}</option>
                     {% endfor %}
                 </select>
             </div>
         </form>
     {% if selected_group %}
-        <h2>Список ведущих и кураторов</h2>
+        <h2>Список ведущих и кураторов, связанных с группой</h2>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Индекс</th>
+                    <th>Номер</th>
                     <th>ФИО</th>
                     <th>Роль</th>
                 </tr>
@@ -34,25 +34,25 @@
                 {% for tutor in tutors %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ tutor.worker.name }} {{ tutor.worker.surname }}</td>
+                        <td>{{ tutor.worker_id.surname }} {{ tutor.worker_id.name }} {{ tutor.worker_id.patronymic }}</td>
                         <td>Ведущий</td>
                     </tr>
                 {% endfor %}
                 {% for curator in curators %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ curator.worker.name }} {{ curator.worker.surname }}</td>
+                        <td>{{ curator.worker_id.surname }} {{ curator.worker_id.name }} {{ curator.worker_id.patronymic }}</td>
                         <td>Куратор</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
 
-        <h2>Список детей</h2>
+        <h2>Список детей в группе</h2>
         <table class="table">
             <thead>
                 <tr>
-                    <th>Индекс</th>
+                    <th>Номер</th>
                     <th>ФИО</th>
                 </tr>
             </thead>
@@ -70,7 +70,7 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Индекс</th>
+                    <th>Номер</th>
                     <th>Название курса</th>
                 </tr>
             </thead>
