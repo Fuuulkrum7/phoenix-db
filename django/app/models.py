@@ -477,25 +477,6 @@ class MarksForVisit(models.Model):
             mark_type__mark_category__description='Трудное поведение'
         ).aggregate(Avg('mark'))
 
-@receiver(pre_save, sender=Lesson)
-def check_semester_in_lesson(sender, instance, **kwargs):
-    if instance.semester is None:
-        try:
-            instance.semester = Semester.objects.get(start_date__lte=instance.lesson_date, end_date__gte=instance.lesson_date)
-        except Semester.DoesNotExist:
-            raise ValidationError('Not correct lesson date')
-    else:
-        if not Semester.objects.filter(pk=instance.semester.pk, start_date__lte=instance.lesson_date, end_date__gte=instance.lesson_date).exists():
-            raise ValidationError('Not correct semester id')
-
-@receiver(pre_save, sender=Lesson)
-def check_add_lesson(sender, instance, **kwargs):
-    if Lesson.objects.filter(
-        models.Q(lesson_date__lte=instance.lesson_date, lesson_date__gte=instance.lesson_date) |
-        models.Q(lesson_date__lte=instance.lesson_date + instance.duration, lesson_date__gte=instance.lesson_date)
-    ).exists():
-        raise ValidationError('Incorrect lesson start time')
-    
 @receiver(pre_save, sender=Semester)
 def check_add_semester(sender, instance, **kwargs):
     if Semester.objects.filter(

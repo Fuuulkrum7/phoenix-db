@@ -1,6 +1,5 @@
 # core/views/add_lesson_views.py
-from datetime import datetime
-import locale
+from datetime import datetime, timedelta
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
@@ -45,17 +44,23 @@ def add_lesson(request: HttpRequest) -> HttpResponse:
         'user_homepage' : page_name,
     }
     
-    return render(request, 'core/add_lesson.html')
+    return render(request, 'core/add_lesson.html', context)
 
 
-##
-def get_courses_by_teacher(request: HttpRequest, teacher_id: int) -> JsonResponse:
+def validate_user(request: HttpRequest):
     user_id = request.session.get('user_id')
     user_role = request.session.get('user_role')
 
     if not user_id or not (user_role in ['C', 'T']):
         # Handle case where user_id is not in session
-        return redirect('../../../../login/')
+        return redirect('../../../login/')
+
+
+##
+def get_courses_by_teacher(request: HttpRequest) -> JsonResponse:
+    validate_user(request)
+    
+    teacher_id = request.GET["teacher-id"]
 
     possibleCourses = GroupClass.objects.filter(
         teacher_id=teacher_id
@@ -63,14 +68,12 @@ def get_courses_by_teacher(request: HttpRequest, teacher_id: int) -> JsonRespons
     
     return JsonResponse(list(possibleCourses), safe=False)
 
-def get_groups_by_course(request: HttpRequest, teacher_id: int, course_id: int) -> JsonResponse:
-    user_id = request.session.get('user_id')
-    user_role = request.session.get('user_role')
 
-    if not user_id or not (user_role in ['C', 'T']):
-        # Handle case where user_id is not in session
-        return redirect('../../../../login/')
+def get_groups_by_course(request: HttpRequest) -> JsonResponse:
+    validate_user(request)
     
+    teacher_id = request.GET["teacher-select"]
+    course_id = request.GET["course-select"]
     
     possibleGroupes = GroupClass.objects.filter(
         teacher_id=teacher_id, course_id=course_id
@@ -78,13 +81,71 @@ def get_groups_by_course(request: HttpRequest, teacher_id: int, course_id: int) 
     
     return JsonResponse(list(possibleGroupes), safe=False)
 
-def add_new_lesson(request: HttpRequest) -> HttpResponse:
-    user_id = request.session.get('user_id')
-    user_role = request.session.get('user_role')
+def get_teacher_lessons(request: HttpRequest) -> JsonResponse:
+    validate_user(request)
+    
+    teacher_id = request.GET["teacher-select"]
+    cur_date = datetime.strptime(request.GET["choose-date"], "%d.%m.%Y")
+    
+    if not teacher_id:
+        messages.error(request, f'Не учитель для назначения урока')
+    
+    lessons_teacher = Lesson.objects.filter(
+        class_id__teacher_id=teacher_id, lesson_date__date=cur_date
+    ).values("lesson_date", "duration", 
+             "class_id__course_id__course_name",
+             "class_id__group_id__group_name")
+    
+    all_data = []
+    
+    for i in lessons_teacher:
+        data = {}
+        data["lesson_date"] = i["lesson_date"].date()
+        data["lesson_time"] = i["lesson_date"].time()
+        data["lesson_end"] = (i["lesson_date"] + timedelta(minutes=int(i["duration"]))).time()
+        data["course_name"] = i["class_id__course_id__course_name"]
+        data["group_name"] = i["class_id__group_id__group_name"]
+        
+        all_data.append(data)
+    
+    return JsonResponse(all_data, safe=False)
 
-    if not user_id or not (user_role in ['C', 'T']):
-        # Handle case where user_id is not in session
-        return redirect('../../../login/')
+def get_group_lessons(request: HttpRequest) -> JsonResponse:
+    validate_user(request)
+    
+    group_id = request.GET["group-select"]
+    cur_date = datetime.strptime(request.GET["choose-date"], "%d.%m.%Y")
+    
+    if not group_id:
+        messages.error(request, f'Не выбрана группа для назначения урока')
+    
+    lessons_group = Lesson.objects.filter(
+        class_id__group_id=group_id, lesson_date__date=cur_date
+    ).values("lesson_date", "duration", 
+             "class_id__course_id__course_name",
+             "class_id__teacher_id__name",
+             "class_id__teacher_id__surname",
+             "class_id__teacher_id__patronymic")
+    
+    all_data = []
+    
+    for i in lessons_group:
+        data = {}
+        data["lesson_date"] = i["lesson_date"].date()
+        data["lesson_time"] = i["lesson_date"].time()
+        data["lesson_end"] = (i["lesson_date"] + timedelta(minutes=int(i["duration"]))).time()
+        data["course_name"] = i["class_id__course_id__course_name"]
+        
+        data["teacher_name"] = \
+            f"{i['class_id__teacher_id__surname']} {i['class_id__teacher_id__name']} {i['class_id__teacher_id__patronymic']}"
+        
+        all_data.append(data)
+    
+    return JsonResponse(all_data, safe=False)
+
+
+def add_new_lesson(request: HttpRequest) -> HttpResponse:
+    validate_user(request)
     
     group_id = request.POST["group-select"]
     teacher_id = request.POST["teacher-select"]
@@ -94,15 +155,23 @@ def add_new_lesson(request: HttpRequest) -> HttpResponse:
     choose_time = request.POST["choose-time"] 
     duration = request.POST["duration"]
     
-    if group_id is None or course_id is None or teacher_id is None:
-        return redirect('add_lesson')
+    if not group_id or not teacher_id or not course_id:
+        messages.error(request, f'Не выбран один из параметров для назначения урока')
+        return redirect('../')
     
-    locale.setlocale(locale.LC_TIME, 'ru_RU.UTF-8')
-    fact_date = datetime.strptime(choose_date + " " + choose_time, "%d %b %Y %H:%M")
-    
-    class_id = GroupClass.objects.values_list('class_id', flat=True).get(
+    class_id = GroupClass.objects.get(
         teacher_id=teacher_id, group_id=group_id, course_id=course_id)
     
+    if not class_id:
+        messages.error(request, f'Некорректные параметры класса')
+        return redirect('../')
+    
+    fact_date = datetime.strptime(choose_date + " " + choose_time, "%d.%m.%Y %H:%M")
+    
+    if fact_date.weekday() == 6:
+        messages.error(request, f'Урок нельзя ставить на воскресенье')
+        return redirect('../')
+        
     lesson = Lesson(
         duration=duration,
         lesson_date=fact_date,
@@ -114,5 +183,6 @@ def add_new_lesson(request: HttpRequest) -> HttpResponse:
         lesson.save()
     except IntegrityError as e:
         print(e)
-        messages.error(request, f'Некорректные параметры для занятия')
-        return redirect('add_visit', class_id=class_id)
+        messages.error(request, f'Происходит наложение занятий для данной группы или преподавателя')
+    
+    return redirect('../')

@@ -37,10 +37,18 @@ CREATE TRIGGER check_semester_lesson_trigger
 CREATE OR REPLACE FUNCTION check_add_lesson()
 RETURNS trigger AS
 $$
+DECLARE
+    cur_group INT;
+    cur_teacher INT;
 BEGIN
-    IF EXISTS (SELECT 1 FROM lesson WHERE 
-                  NEW.lesson_date >= lesson_date AND NEW.lesson_date < (lesson_date + (INTERVAL '1 min' * duration)) OR 
-                  (NEW.lesson_date + (INTERVAL '1 min' * NEW.duration)) > lesson_date AND NEW.lesson_date <= lesson_date) THEN
+    SELECT group_id FROM group_class WHERE class_id=NEW.class_id INTO cur_group;
+    SELECT teacher_id FROM group_class WHERE class_id=NEW.class_id INTO cur_teacher;
+
+    IF EXISTS (SELECT 1 FROM lesson l 
+            INNER JOIN group_class gc ON gc.class_id = l.class_id
+            WHERE (gc.teacher_id = cur_teacher OR gc.group_id = cur_group) AND
+            (NEW.lesson_date >= l.lesson_date AND NEW.lesson_date < (l.lesson_date + (INTERVAL '1 min' * l.duration)) OR 
+            (NEW.lesson_date + (INTERVAL '1 min' * NEW.duration)) > l.lesson_date AND NEW.lesson_date <= l.lesson_date)) THEN
         RAISE EXCEPTION 'Incorrect lesson start time';
     END IF;
 

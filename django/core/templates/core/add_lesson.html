@@ -5,60 +5,275 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="{% static 'styles/global.css' %}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <title>Добавить занятие</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/locale/ru.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
 
     <script>
         $(document).ready(function() {
-            // Show error notification if there's an error message
-            {% if messages %}
-                {% for message in messages %}
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Ошибка',
-                        text: '{{ message }}'
-                    });
-                {% endfor %}
-            {% endif %}
-            
-            // Update courses based on selected teacher
-            $('#teacher-select').change(function(){
-                var teacherId = $(this).val();
-                if(teacherId) {
-                    $('#course-select').empty();
-                    $.ajax({
-                        url: '{% url "get_courses_by_teacher" 0 %}'.replace(0, teacherId),
-                        success: function(data){
-                            var toAppend = '<option value="">Выберите курс</option>';
-                            for (var i = 0; i < data.length; i++){
-                                toAppend += '<option value="' + data[i].course_id + '">' + data[i]['course_id__course_name'] + '</option>';
-                            }
-                            $('#course-select').append(toAppend);
+        // Initialize moment.js locale
+        moment.locale('ru');
+
+        // Initialize datetime picker for date
+        $('#choose-date').datetimepicker({
+            format: 'L',
+            locale: 'ru',
+            icons: {
+                time: 'fa fa-clock',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-check',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        });
+
+        // Initialize datetime picker for time
+        $('#choose-time').datetimepicker({
+            format: 'HH:mm',
+            stepping: 15,
+            locale: 'ru',
+            icons: {
+                time: 'fa fa-clock',
+                date: 'fa fa-calendar',
+                up: 'fa fa-chevron-up',
+                down: 'fa fa-chevron-down',
+                previous: 'fa fa-chevron-left',
+                next: 'fa fa-chevron-right',
+                today: 'fa fa-check',
+                clear: 'fa fa-trash',
+                close: 'fa fa-times'
+            }
+        });
+
+        // Prevent both datetime pickers from showing at the same time
+        $('#choose-date').on('dp.show', function () {
+            $('#choose-time').datetimepicker('hide');
+        });
+
+        $('#choose-time').on('dp.show', function () {
+            $('#choose-date').datetimepicker('hide');
+        });
+
+        // Show error notification if there's an error message
+        {% if messages %}
+            {% for message in messages %}
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Ошибка',
+                    text: '{{ message }}'
+                });
+            {% endfor %}
+        {% endif %}
+
+        // Update courses based on selected teacher
+        $('#teacher-select').change(function(){
+            var teacherId = $(this).val();
+            if(teacherId) {
+                $('#course-select').empty().append('<option value="">Загрузка...</option>');
+                $.ajax({
+                    url: '{% url "get_courses_by_teacher" %}',
+                    data: {'teacher-id': teacherId},
+                    success: function(data){
+                        $('#course-select').empty().append('<option value="">Выберите курс</option>');
+                        for (var i = 0; i < data.length; i++){
+                            $('#course-select').append('<option value="' + data[i].course_id + '">' + data[i]['course_id__course_name'] + '</option>');
                         }
-                    });
+                        checkTeacherAndDateSelected();
+                    },
+                    error: function() {
+                        $('#course-select').empty().append('<option value="">Ошибка загрузки</option>');
+                    }
+                });
+            } else {
+                $('#course-select').empty().append('<option value="">Сначала выберите учителя</option>');
+                $('#group-select').empty().append('<option value="">Сначала выберите курс</option>');
+            }
+        });
+
+        // Update groups based on selected course
+        $('#course-select').change(function(){
+            var teacherId = $('#teacher-select').val();
+            var courseId = $(this).val();
+            if(courseId && teacherId) {
+                $('#group-select').empty().append('<option value="">Загрузка...</option>');
+                $.ajax({
+                    url: '{% url "get_groups_by_course" %}',
+                    data: {'teacher-select': teacherId, 'course-select': courseId},
+                    success: function(data){
+                        $('#group-select').empty().append('<option value="">Выберите группу</option>');
+                        for (var i = 0; i < data.length; i++){
+                            $('#group-select').append('<option value="' + data[i].group_id + '">' + data[i]['group_id__group_name'] + '</option>');
+                        }
+                        checkGroupAndDateSelected();
+                    },
+                    error: function() {
+                        $('#group-select').empty().append('<option value="">Ошибка загрузки</option>');
+                    }
+                });
+            } else {
+                $('#group-select').empty().append('<option value="">Сначала выберите курс</option>');
+            }
+        });
+
+        $('#choose-date').on('change.datetimepicker', function() {
+            console.log("It's ok");
+            checkTeacherAndDateSelected();
+            checkGroupAndDateSelected();
+        });
+
+        $('#group-select').change(function() {
+            checkGroupAndDateSelected();
+        });
+
+        function checkTeacherAndDateSelected() {
+            var teacherId = $('#teacher-select').val();
+            var date = $('#choose-date input').val();
+
+            if (teacherId && date) {
+                console.log("Loading teacher lessons for date:", date);
+                loadTeacherLessons(teacherId, date);
+            }
+        }
+
+        function checkGroupAndDateSelected() {
+            var groupId = $('#group-select').val();
+            var date = $('#choose-date input').val();
+
+            if (groupId && date) {
+                console.log("Loading group lessons for date:", date);
+                loadGroupLessons(groupId, date);
+            }
+        }
+
+        function loadTeacherLessons(teacherId, date) {
+            $.ajax({
+                url: '{% url "get_teacher_lessons" %}',
+                data: {
+                    'teacher-select': teacherId,
+                    'choose-date': date
+                },
+                success: function(data) {
+                    console.log("Teacher lessons loaded:", data);
+                    $('#teacher-lessons-table tbody').empty();
+                    var lessons = data;
+                    for (var i = 0; i < lessons.length; i++) {
+                        $('#teacher-lessons-table tbody').append(
+                            '<tr>' +
+                                '<td>' + lessons[i].lesson_date + '</td>' +
+                                '<td>' + lessons[i].lesson_time + '</td>' +
+                                '<td>' + lessons[i].lesson_end + '</td>' +
+                                '<td>' + lessons[i].course_name + '</td>' +
+                                '<td>' + lessons[i].group_name + '</td>' +
+                            '</tr>'
+                        );
+                    }
+                },
+                error: function() {
+                    $('#teacher-lessons-table tbody').empty().append('<tr><td colspan="5">Ошибка загрузки данных</td></tr>');
                 }
             });
+        }
 
-            // Update groups based on selected course
-            $('#course-select').change(function(){
-                var teacherId = $('#teacher-select').val();
-                var courseId = $(this).val();
-                if(courseId && teacherId) {
-                    $('#group-select').empty();
-                    $.ajax({
-                        url: '{% url "get_groups_by_course" 0 0 %}'.replace(/0\/0/, teacherId + '/' + courseId),
-                        success: function(data){
-                            var toAppend = '<option value="">Выберите группу</option>';
-                            for (var i = 0; i < data.length; i++){
-                                toAppend += '<option value="' + data[i].group_id + '">' + data[i]['group_id__group_name'] + '</option>';
-                            }
-                            $('#group-select').append(toAppend);
-                        }
+        function loadGroupLessons(groupId, date) {
+            $.ajax({
+                url: '{% url "get_group_lessons" %}',
+                data: {
+                    'group-select': groupId,
+                    'choose-date': date
+                },
+                success: function(data) {
+                    console.log("Group lessons loaded:", data);
+                    $('#group-lessons-table tbody').empty();
+                    var lessons = data;
+                    for (var i = 0; i < lessons.length; i++) {
+                        $('#group-lessons-table tbody').append(
+                            '<tr>' +
+                                '<td>' + lessons[i].lesson_date + '</td>' +
+                                '<td>' + lessons[i].lesson_time + '</td>' +
+                                '<td>' + lessons[i].lesson_end + '</td>' +
+                                '<td>' + lessons[i].course_name + '</td>' +
+                                '<td>' + lessons[i].teacher_name + '</td>' +
+                            '</tr>'
+                        );
+                    }
+                },
+                error: function() {
+                    $('#group-lessons-table tbody').empty().append('<tr><td colspan="5">Ошибка загрузки данных</td></tr>');
+                }
+            });
+        }
+
+        // Form submission with duration check
+        $('form').submit(function(event) {
+            event.preventDefault();
+            var duration = $('#duration').val();
+            if (duration <= 0 || !Number.isInteger(parseFloat(duration))) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Некорректная длительность',
+                    text: 'Пожалуйста, введите положительное целое число для длительности урока.'
+                });
+                $('#duration').val('');
+                return;
+            }
+
+            var formData = $(this).serialize();
+            $.ajax({
+                type: 'POST',
+                url: '{% url "add_new_lesson" %}',
+                data: formData,
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Урок добавлен',
+                        text: 'Урок успешно добавлен в расписание.'
+                    });
+
+                    var lessonDate = $('#choose-date input').val();
+                    var lessonTime = $('#choose-time input').val();
+                    var courseName = $('#course-select option:selected').text();
+                    var groupName = $('#group-select option:selected').text();
+                    var teacherName = $('#teacher-select option:selected').text();
+
+                    $('#lesson-table tbody').append(
+                        '<tr>' +
+                            '<td>' + lessonDate + '</td>' +
+                            '<td>' + lessonTime + '</td>' +
+                            '<td>' + courseName + '</td>' +
+                            '<td>' + groupName + '</td>' +
+                            '<td>' + teacherName + '</td>' +
+                        '</tr>'
+                    );
+
+                    // Clear input fields
+                    $('#group-lessons-table tbody').empty();
+                    $('#teacher-lessons-table tbody').empty();
+                    $('#teacher-select').val('');
+                    $('#course-select').empty().append('<option value="">Сначала выберите учителя</option>');
+                    $('#group-select').empty().append('<option value="">Сначала выберите курс</option>');
+                    $('#choose-date').datetimepicker('clear');
+                    $('#choose-time').datetimepicker('clear');
+                    $('#duration').val('');
+                },
+                error: function(response) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Ошибка',
+                        text: 'Произошла ошибка при добавлении урока. Попробуйте еще раз.'
                     });
                 }
             });
         });
+    });
     </script>
 </head>
 <body>
@@ -89,30 +304,41 @@
         </div>
         <div class="form-group">
             <label for="choose-date">Дата:</label>
-            <input type="date" id="choose-date" name="choose-date" class="form-control">
+            <div class="input-group date" id="choose-date" data-target-input="nearest">
+                <input type="text" name="choose-date" class="form-control datetimepicker-input" data-target="#choose-date"/>
+                <div class="input-group-append" data-target="#choose-date" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-calendar"></i></div>
+                </div>
+            </div>
         </div>
         <div class="form-group">
             <label for="choose-time">Время:</label>
-            <input type="time" id="choose-time" name="choose-time" class="form-control">
+            <div class="input-group time" id="choose-time" data-target-input="nearest">
+                <input type="text" name="choose-time" class="form-control datetimepicker-input" data-target="#choose-time"/>
+                <div class="input-group-append" data-target="#choose-time" data-toggle="datetimepicker">
+                    <div class="input-group-text"><i class="fa fa-clock"></i></div>
+                </div>
+            </div>
         </div>
         <div class="form-group">
             <label for="duration">Длительность (минут):</label>
             <input type="number" id="duration" name="duration" class="form-control">
         </div>
         <button type="submit" class="btn btn-primary btn-block">Добавить занятие</button>
+        <a href="../../{{ user_homepage }}/" class="btn btn-secondary mt-3">На домашнюю страницу</a>
+        <a href="{% url 'schedule' %}" class="btn btn-secondary mt-3">Назад к просмотру расписания</a>
     </form>
     
-    <a href="../{{ user_homepage }}/" class="btn btn-secondary mt-3">Назад</a>
-
     <h2 class="my-3">Ранее добавленные занятия</h2>
     <div class="table-responsive">
-        <table class="table table-striped">
+        <table id="lesson-table" class="table table-striped">
             <thead>
                 <tr>
                     <th>Дата</th>
                     <th>Время</th>
                     <th>Курс</th>
                     <th>Группа</th>
+                    <th>Преподаватель</th>
                 </tr>
             </thead>
             <tbody>
@@ -120,16 +346,54 @@
                     <tr>
                         <td>{{ lesson.lesson_date.date }}</td>
                         <td>{{ lesson.lesson_date.time }}</td>
-                        <td>{{ lesson.class_id.course_id.course_name}}</td>
+                        <td>{{ lesson.class_id.course_id.course_name }}</td>
                         <td>{{ lesson.class_id.group_id.group_name }}</td>
+                        <td>{{ lesson.class_id.teacher_id.name }} {{ lesson.class_id.teacher_id.surname }} {{ lesson.class_id.teacher_id.patronymic }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+    
+    <h2 class="my-3">Занятия учителя на выбранный день</h2>
+    <div class="table-responsive">
+        <table id="teacher-lessons-table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Время начала</th>
+                    <th>Время окончания</th>
+                    <th>Название предмета</th>
+                    <th>Имя группы</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Динамически заполняемые строки -->
+            </tbody>
+        </table>
+    </div>
+
+    <h2 class="my-3">Занятия группы на выбранный день</h2>
+    <div class="table-responsive">
+        <table id="group-lessons-table" class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Время начала</th>
+                    <th>Время окончания</th>
+                    <th>Название предмета</th>
+                    <th>ФИО преподавателя</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Динамически заполняемые строки -->
+            </tbody>
+        </table>
+    </div>
 </div>
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
 </body>
 </html>
