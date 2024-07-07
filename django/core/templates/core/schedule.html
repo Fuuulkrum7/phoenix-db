@@ -9,15 +9,15 @@
 </head>
 <body>
     <div class="container">
-        <h1>Расписание</h1>
+        <h1 class="my-3">Расписание</h1>
         <form method="get" class="form-inline mb-3">
             <div class="form-group mx-sm-3 mb-2">
-                <label for="start_date" class="sr-only">Дата начала</label>
-                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                <label for="start_date" class="sr-only">Дата начала / {{ start_date|date:'Y-m-d' }}</label>
+                <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
             </div>
             <div class="form-group mx-sm-3 mb-2">
-                <label for="end_date" class="sr-only">Дата конца</label>
-                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                <label for="end_date" class="sr-only">Дата конца / {{ end_date|date:'Y-m-d' }}</label>
+                <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
             </div>
             <button type="submit" class="btn btn-primary mb-2">Найти</button>
         </form>
@@ -26,34 +26,40 @@
             <a href="{% url 'add_lesson' %}" class="btn btn-success mb-3">Добавить занятие</a>
         {% endif %}
 
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Дата</th>
-                    <th>Время</th>
-                    <th>Занятие</th>
-                    <th>Группа</th>
-                    {% if can_add_lesson %}
-                        <th>Действия</th>
-                    {% endif %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for lesson in lessons %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
                     <tr>
-                        <td>{{ lesson.lesson_date.date }}</td>
-                        <td>{{ lesson.lesson_date.time }}</td>
-                        <td>{{ lesson.class_id.course.course_name}}</td>
-                        <td>{{ lesson.class_id.group.group_name }}</td>
+                        <th>Дата</th>
+                        <th>Время</th>
+                        <th>Занятие</th>
+                        <th>Группа</th>
                         {% if can_add_lesson %}
-                            <td>
-                                <a href="{% url 'edit_lesson' lesson.pk %}" class="btn btn-primary btn-sm">Править</a>
-                            </td>
+                            <th>Действия</th>
                         {% endif %}
                     </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {% for lesson in lessons %}
+                        <tr>
+                            <td>{{ lesson.lesson_date.date }}</td>
+                            <td>{{ lesson.lesson_date.time }}</td>
+                            <td>{{ lesson.class_id.course_id.course_name}}</td>
+                            <td>{{ lesson.class_id.group_id.group_name }}</td>
+                            {% if can_add_lesson %}
+                                <td>
+                                    <a href="{% url 'edit_lesson' %}" class="btn btn-primary btn-sm">Править</a>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
