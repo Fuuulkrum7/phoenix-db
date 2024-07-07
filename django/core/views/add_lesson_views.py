@@ -3,35 +3,41 @@ from datetime import datetime, timedelta
 
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib.sessions.backends.base import SessionBase
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.contrib import messages
 from django.db import IntegrityError
 
-from app.models import GroupClass, Worker, Lesson, Course
+from app.models import GroupClass, Lesson
 
-## \brief basic page for adding 
+
+def validate_user(session: SessionBase):
+    """! Basic validation for user for pages
+    
+    @param session from HttpRequest, type SessionBase
+    """
+    user_id = session.get('user_id')
+    user_role = session.get('user_role')
+
+    flag = user_id and user_role in ['C', 'T']
+    
+    if not flag: 
+        print("User has incorrect role")
+
+    return flag
+
+
 @login_required
 def add_lesson(request: HttpRequest) -> HttpResponse:
-    user_id = request.session.get('user_id')
+    """! Basic page for adding new lesson"""
     user_role = request.session.get('user_role')
 
-    if not user_id or not (user_role in ['C', 'T']):
+    if not validate_user(request.session):
         # Handle case where user_id is not in session
         return redirect('../../login/')
     
     possible_teachers = GroupClass.objects.all().values(
         "teacher_id", "teacher_id__name", "teacher_id__surname", "teacher_id__patronymic").distinct()
-    possible_courses = []
-    possible_groups = []
-    
-    if len(possible_teachers):
-        teacher = possible_teachers[0]["teacher_id"]
-        possibleCourses = GroupClass.objects.filter(teacher_id=possible_teachers[0]["teacher_id"])\
-                .values_list("course_id", flat=True).distinct()
-        
-        if len(possibleCourses):
-            possible_groups = GroupClass.objects.filter(teacher_id=teacher,
-                course_id=possibleCourses[0]).distinct()
     
     page_name = 'curator'
     # if user_role == 'T':
@@ -39,28 +45,21 @@ def add_lesson(request: HttpRequest) -> HttpResponse:
 
     context = {
         'possible_teachers': possible_teachers,
-        'possible_courses': possible_courses,
-        'possible_groups': possible_groups,
         'user_homepage' : page_name,
     }
     
     return render(request, 'core/add_lesson.html', context)
 
 
-def validate_user(request: HttpRequest):
-    user_id = request.session.get('user_id')
-    user_role = request.session.get('user_role')
-
-    if not user_id or not (user_role in ['C', 'T']):
+def get_courses_by_teacher(request: HttpRequest) -> JsonResponse:
+    """! Return json, a list of courses, which can be held by specific teacher.
+    Requires teacher-select (a-ka id) in get request
+    """
+    if not validate_user(request.session):
         # Handle case where user_id is not in session
         return redirect('../../../login/')
-
-
-##
-def get_courses_by_teacher(request: HttpRequest) -> JsonResponse:
-    validate_user(request)
     
-    teacher_id = request.GET["teacher-id"]
+    teacher_id = request.GET["teacher-select"]
 
     possibleCourses = GroupClass.objects.filter(
         teacher_id=teacher_id
@@ -70,7 +69,13 @@ def get_courses_by_teacher(request: HttpRequest) -> JsonResponse:
 
 
 def get_groups_by_course(request: HttpRequest) -> JsonResponse:
-    validate_user(request)
+    """! Return json, a list of groups, which can be held by specific teacher and 
+    and who have a specific course.
+    Requires teacher-select and course-select (a-ka id) in get request
+    """
+    if not validate_user(request.session):
+        # Handle case where user_id is not in session
+        return redirect('../../../login/')
     
     teacher_id = request.GET["teacher-select"]
     course_id = request.GET["course-select"]
@@ -81,8 +86,14 @@ def get_groups_by_course(request: HttpRequest) -> JsonResponse:
     
     return JsonResponse(list(possibleGroupes), safe=False)
 
+
 def get_teacher_lessons(request: HttpRequest) -> JsonResponse:
-    validate_user(request)
+    """! Returns lessons list (as json), whcih teacher would held in a specific day
+    Requires teacher-select (a-ka id) and date in get request
+    """
+    if not validate_user(request.session):
+        # Handle case where user_id is not in session
+        return redirect('../../../login/')
     
     teacher_id = request.GET["teacher-select"]
     cur_date = datetime.strptime(request.GET["choose-date"], "%d.%m.%Y")
@@ -111,7 +122,12 @@ def get_teacher_lessons(request: HttpRequest) -> JsonResponse:
     return JsonResponse(all_data, safe=False)
 
 def get_group_lessons(request: HttpRequest) -> JsonResponse:
-    validate_user(request)
+    """! Returns lessons list (as json), whcih group would have in a specific day
+    Requires group-select (a-ka id) and date in get request
+    """
+    if not validate_user(request.session):
+        # Handle case where user_id is not in session
+        return redirect('../../../login/')
     
     group_id = request.GET["group-select"]
     cur_date = datetime.strptime(request.GET["choose-date"], "%d.%m.%Y")
@@ -145,14 +161,18 @@ def get_group_lessons(request: HttpRequest) -> JsonResponse:
 
 
 def add_new_lesson(request: HttpRequest) -> HttpResponse:
-    validate_user(request)
+    """! Add new lesson to database, requires a post query
+    """
+    if not validate_user(request.session):
+        # Handle case where user_id is not in session
+        return redirect('../../../login/')
     
     group_id = request.POST["group-select"]
     teacher_id = request.POST["teacher-select"]
     course_id = request.POST["course-select"]
     # TODO add this params (and checks for them)
     choose_date = request.POST["choose-date"]
-    choose_time = request.POST["choose-time"] 
+    choose_time = request.POST["choose-time"]
     duration = request.POST["duration"]
     
     if not group_id or not teacher_id or not course_id:

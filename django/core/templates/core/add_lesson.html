@@ -63,16 +63,19 @@
             $('#choose-date').datetimepicker('hide');
         });
 
-        // Show error notification if there's an error message
-        {% if messages %}
-            {% for message in messages %}
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Ошибка',
-                    text: '{{ message }}'
-                });
-            {% endfor %}
-        {% endif %}
+        
+        $(document).ready(function() {
+            // Show error notification if there's an error message
+            {% if messages %}
+                {% for message in messages %}
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Иррациональное намерение',
+                        text: '{{ message }}'
+                    });
+                {% endfor %}
+            {% endif %}
+        });
 
         // Update courses based on selected teacher
         $('#teacher-select').change(function(){
@@ -81,7 +84,7 @@
                 $('#course-select').empty().append('<option value="">Загрузка...</option>');
                 $.ajax({
                     url: '{% url "get_courses_by_teacher" %}',
-                    data: {'teacher-id': teacherId},
+                    data: {'teacher-select': teacherId},
                     success: function(data){
                         $('#course-select').empty().append('<option value="">Выберите курс</option>');
                         for (var i = 0; i < data.length; i++){
@@ -265,6 +268,7 @@
                     $('#duration').val('');
                 },
                 error: function(response) {
+                    // TODO change to correct error text
                     Swal.fire({
                         icon: 'error',
                         title: 'Ошибка',

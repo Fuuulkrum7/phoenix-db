@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from app.models import Visits, Child, GroupClass, Lesson, Group
+from app.models import Visits, Child, GroupClass, Lesson
 from django.contrib import messages
 from django.db import IntegrityError
 from django.shortcuts import render, redirect, get_object_or_404
@@ -25,7 +25,9 @@ def add_visit(request, class_id):
 
     # Filter out lessons that already have visits
     existing_lesson_ids = Visits.objects.filter(class_id=group_class).values_list('lesson_date', flat=True)
-    lessons = Lesson.objects.filter(class_id=group_class).exclude(lesson_date__in=existing_lesson_ids)
+    lessons = Lesson.objects.filter(class_id=group_class)\
+                            .exclude(lesson_date__in=existing_lesson_ids)\
+                            .order_by("lesson_date")
 
     for lesson in lessons:
         lesson.end_time = lesson.lesson_date + timedelta(minutes=lesson.duration)

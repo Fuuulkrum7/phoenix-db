@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from app.models import Course, GroupClass, Visits, Lesson, Group
+from app.models import Course, GroupClass, Visits, Lesson
 from django.contrib import messages
 
 ## \brief Displays the interface for tutors.
