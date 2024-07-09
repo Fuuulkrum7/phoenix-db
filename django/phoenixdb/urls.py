@@ -13,6 +13,7 @@ from django.contrib.auth import views as auth_views
 from django.shortcuts import redirect
 from . import settings
 from django.conf.urls.static import static
+from debug_toolbar.toolbar import debug_toolbar_urls
 
 # from app.views import forbidden
 
@@ -31,4 +32,4 @@ urlpatterns = [
     path('child/', include('core.urls.child')),  # Includes all URL patterns for child module.
     path('statistics/', include('core.urls.statistics')),  # Includes all URL patterns for statistics module.
     path('', lambda request: redirect('login')),  # Redirects root requests to login page.
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + debug_toolbar_urls()
