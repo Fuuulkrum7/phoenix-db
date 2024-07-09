@@ -5,6 +5,7 @@
 
 import os
 from pathlib import Path
+import socket
 
 ## @var BASE_DIR
 #  Absolute path to the base directory of the project.
@@ -37,13 +38,15 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app',
+    'debug_toolbar',
 ]
 
 ## @var MIDDLEWARE
 #  List of middleware to handle requests during response and request phases.
 #  Middleware are hooks into Django's request/response processing.
 MIDDLEWARE = [
-    'django.middleware.locale.LocaleMiddleware'
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,7 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'app.middleware.RoleBasedAccessMiddleware',
+    'app.middleware.RoleBasedAccessMiddleware',  # Добавляем наше кастомное middleware
 ]
 
 
@@ -150,18 +153,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_REDIRECT_URL = '/tutor/'
 LOGOUT_REDIRECT_URL = '/login/'
 
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'app.middleware.RoleBasedAccessMiddleware',  # Добавляем наше кастомное middleware
-]
 
 ## @var DEFAULT_AUTO_FIELD
 #  The default type of primary key to use for new models if the model doesn’t explicitly specify.
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+hostname, _, ips = socket.gethostbyname_ex(socket.gethostname())
+INTERNAL_IPS = [ip[:-1] + "1" for ip in ips]
 
